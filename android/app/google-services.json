@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "368640739602",
+    "project_id": "bip-project-france",
+    "storage_bucket": "bip-project-france.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:368640739602:android:872aa4b2cba5fe4c2ecbcb",
+        "android_client_info": {
+          "package_name": "com.example.starteu"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjgG7guNOarrnzPc_3MqatoqcE-4HLWAM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

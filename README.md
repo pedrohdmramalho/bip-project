@@ -1,12 +1,16 @@
-# starteu
+# bip-project
 
-A new Flutter project.
+A repository to BIP - Belfort project.
 
-## Getting Started
+## Starteu (Flutter App)
+
+This is a Flutter application that is part of the BIP project.
+
+### Getting Started
 
 This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
+Some useful resources if this is your first Flutter project:
 
 - [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
 - [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)

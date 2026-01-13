@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // <--- CETTE LIGNE MANQUAIT
 
 class MeditationPage extends StatelessWidget {
   const MeditationPage({super.key});
@@ -6,8 +6,12 @@ class MeditationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Meditation")),
-      body: const Center(child: Text("Meditation page")),
+      appBar: AppBar(
+        title: const Text("Meditation"),
+        automaticallyImplyLeading: false, // Cache la flèche car on est dans un onglet
+        centerTitle: true,
+      ),
+      body: const Center(child: Text("Meditation Content")),
     );
   }
 }

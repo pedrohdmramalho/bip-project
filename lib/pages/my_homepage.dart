@@ -5,6 +5,8 @@ import '../widgets/streak_card.dart';
 import '../widgets/recommendation_tile.dart';
 import 'meditation_page.dart';
 import 'library_page.dart';
+import 'notifications_page.dart'; 
+import 'main_navigation_page.dart'; 
 
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
@@ -26,7 +28,7 @@ class MyHomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 10),
-                  _buildHeader(),
+                  _buildHeader(context), 
                   const SizedBox(height: 30),
                   
                   const Text(
@@ -38,7 +40,6 @@ class MyHomePage extends StatelessWidget {
                   _buildMoodRow(context, state.todayMood),
                   const SizedBox(height: 30),
 
-                  // Dynamic Streak Card based on Bloc State
                   StreakCard(
                     streakCount: state.streakCount,
                     progress: (state.streakCount % 7) / 7,
@@ -53,10 +54,10 @@ class MyHomePage extends StatelessWidget {
                     title: "5-Min Morning Zen",
                     subtitle: "A quick session to start your day focused.",
                     backgroundColor: const Color(0xFFE3F2FD),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const MeditationPage()),
-                    ),
+                    onTap: () {
+                      // On demande à la page parente de changer d'onglet
+                      MainNavigationPage.of(context)?.changeTab(2);
+                    },
                   ),
 
                   RecommendationTile(
@@ -64,10 +65,9 @@ class MyHomePage extends StatelessWidget {
                     title: "Calming Music",
                     subtitle: "Listen to ambient sounds for deep focus.",
                     backgroundColor: const Color(0xFFFFF3E0),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const LibraryPage()),
-                    ),
+                    onTap: () {
+                      MainNavigationPage.of(context)?.changeTab(1);
+                    },
                   ),
 
                   RecommendationTile(
@@ -89,7 +89,7 @@ class MyHomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -97,14 +97,20 @@ class MyHomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("Good Morning,", style: TextStyle(color: Colors.grey, fontSize: 14)),
-            Text("Sarah", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            // TODO: Implement dynamic user name retrieval (e.g. from Firebase Auth)
+            Text("User", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           ],
         ),
         Container(
           decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
           child: IconButton(
             icon: const Icon(Icons.notifications_none, color: Colors.black),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NotificationsPage()),
+              );
+            },
           ),
         ),
       ],

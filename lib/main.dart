@@ -1,27 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'package:starteu/pages/my_homepage.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_core/firebase_core.dart'; // Ensure firebase is initialized
+import 'bloc/mood_bloc.dart';
+import 'data/repositories/mood_repository.dart';
+import 'pages/main_navigation_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(); // Required for Firestore
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Mental Health',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<MoodBloc>(
+          create: (context) => MoodBloc(
+            repository: MoodRepository(),
+          )..add(LoadMoodStatus()),
+        ),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
+        home: const MainNavigationPage(),
       ),
-      home: const MyHomePage(title: 'Mental Health'),
     );
   }
 }

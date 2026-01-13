@@ -24,7 +24,7 @@ void changeTab(int index) {
 
 final List<Widget> _pages = [
   const MyHomePage(),
-  const LibraryPage(),
+  const LibraryPage(title: "Library"),
   const MeditationPage(),
   const Center(child: Text('Profile')),
 ];

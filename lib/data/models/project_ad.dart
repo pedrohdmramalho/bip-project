@@ -18,7 +18,6 @@ class ProjectAd extends Equatable{
   );
   
   @override
-  // TODO: implement props
   List<Object?> get props => [id, title, description, authorId, createdAt];
 
   Map<String, dynamic> toMap() => {

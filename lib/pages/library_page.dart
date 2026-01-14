@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import '../config/api_keys.dart';
+//import 'dart:convert';
+//import 'package:http/http.dart' as http;
+//import '../config/api_keys.dart';
 
 class LibraryPage extends StatefulWidget {
   const LibraryPage({super.key, required this.title});
@@ -65,7 +65,7 @@ class _LibraryPageState extends State<LibraryPage> {
     setState(() => _isLoading = true);
     
     List<Map<String, dynamic>> allTracks = [];
-    
+    /*
     try {
       for (var category in _categories) {
         if (category == 'All') continue;
@@ -97,6 +97,7 @@ class _LibraryPageState extends State<LibraryPage> {
     } catch (e) {
       allTracks = _getExampleTracks();
     }
+    */
     
     setState(() {
       _musicList = allTracks;

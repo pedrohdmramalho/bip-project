@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:starteu/bloc/daily_reflection_bloc.dart';
 import '../bloc/mood_bloc.dart';
 import '../widgets/streak_card.dart';
 import '../widgets/recommendation_tile.dart';
-import 'meditation_page.dart';
-import 'library_page.dart';
-import 'notifications_page.dart'; 
-import 'main_navigation_page.dart'; 
+import '../pages/meditation_page.dart';
+import '../pages/daily_reflection_page.dart';
+import '../pages/library_page.dart';
+import 'notifications_page.dart';
+import 'main_navigation_page.dart';
 
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
@@ -28,15 +30,15 @@ class MyHomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 10),
-                  _buildHeader(context), 
+                  _buildHeader(context),
                   const SizedBox(height: 30),
-                  
+
                   const Text(
                     "How are you feeling today?",
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 20),
-                  
+
                   _buildMoodRow(context, state.todayMood),
                   const SizedBox(height: 30),
 
@@ -44,7 +46,7 @@ class MyHomePage extends StatelessWidget {
                     streakCount: state.streakCount,
                     progress: (state.streakCount % 7) / 7,
                   ),
-                  
+
                   const SizedBox(height: 30),
                   _buildSectionHeader("Today's Recommendations"),
                   const SizedBox(height: 15),
@@ -76,7 +78,12 @@ class MyHomePage extends StatelessWidget {
                     subtitle: "Write down three things you're grateful for.",
                     backgroundColor: const Color(0xFFE8F5E9),
                     onTap: () {
-                      // Navigate to Journal/Reflection page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DailyReflectionPage(),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: 20),
@@ -96,19 +103,29 @@ class MyHomePage extends StatelessWidget {
         const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Good Morning,", style: TextStyle(color: Colors.grey, fontSize: 14)),
-            // TODO: Implement dynamic user name retrieval (e.g. from Firebase Auth)
-            Text("User", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(
+              "Good Morning,",
+              style: TextStyle(color: Colors.grey, fontSize: 14),
+            ),
+            Text(
+              "User",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         Container(
-          decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            shape: BoxShape.circle,
+          ),
           child: IconButton(
             icon: const Icon(Icons.notifications_none, color: Colors.black),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const NotificationsPage()),
+                MaterialPageRoute(
+                  builder: (context) => const NotificationsPage(),
+                ),
               );
             },
           ),
@@ -121,10 +138,16 @@ class MyHomePage extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         TextButton(
           onPressed: () {},
-          child: const Text("See all", style: TextStyle(color: Colors.deepPurple)),
+          child: const Text(
+            "See all",
+            style: TextStyle(color: Colors.deepPurple),
+          ),
         ),
       ],
     );
@@ -161,7 +184,10 @@ class MyHomePage extends StatelessWidget {
             color: isSelected ? Colors.deepPurple : Colors.grey[100],
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Icon(icon, color: isSelected ? Colors.white : Colors.grey[600]),
+          child: Icon(
+            icon,
+            color: isSelected ? Colors.white : Colors.grey[600],
+          ),
         ),
         const SizedBox(height: 8),
         Text(

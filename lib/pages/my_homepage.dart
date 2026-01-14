@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:starteu/auth/services/auth_service.dart';
 import 'package:starteu/data/widgets/animated_cart.dart';
 import 'package:starteu/pages/create_ad_page.dart';
-import '../bloc/authentication_bloc.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
   final String title;
+  final AuthService authService;
+  const MyHomePage({super.key, required this.title, required this.authService});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -27,13 +27,11 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
         actions: [
-          // LOGOUT BUTTON
           IconButton(
             icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
             onPressed: () {
-              context.read<AuthenticationBloc>().add(
-                AuthenticationLogoutRequested(),
-              );
+              widget.authService.signOut();
             },
           ),
         ],
@@ -61,7 +59,6 @@ class _MyHomePageState extends State<MyHomePage> {
             itemCount: docs.length,
             itemBuilder: (context, index) {
               final data = docs[index].data() as Map<String, dynamic>;
-
               return AnimatedAdCard(
                 index: index,
                 child: Card(
@@ -81,7 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
-        tooltip: 'Increment',
+        tooltip: 'Add Ad',
         child: const Icon(Icons.add),
       ),
     );

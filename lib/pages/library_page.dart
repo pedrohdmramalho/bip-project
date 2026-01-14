@@ -3,6 +3,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config/api_keys.dart';
+import 'main_navigation_page.dart';
 
 class LibraryPage extends StatefulWidget {
   final String title;
@@ -69,7 +70,6 @@ class _LibraryPageState extends State<LibraryPage> {
     setState(() => _isLoading = true);
     
     List<Map<String, dynamic>> allTracks = [];
-    
     try {
       for (var category in _categories) {
         if (category == 'All') continue;
@@ -353,44 +353,67 @@ class _LibraryPageState extends State<LibraryPage> {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        data['title'] ?? 'Bez tytułu',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            data['title'] ?? 'Bez tytułu',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "${_formatDurationString(data['duration'])} • ${data['category'] ?? 'Relaxing'}",
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => _togglePlayPause(data['id'], data['audioPath']),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isCurrentlyPlaying
+                              ? Colors.deepPurple
+                              : Colors.deepPurple[50],
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          isCurrentlyPlaying ? Icons.pause : Icons.play_arrow,
+                          color: isCurrentlyPlaying ? Colors.white : Colors.deepPurple,
+                          size: 28,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "${_formatDurationString(data['duration'])} • ${data['category'] ?? 'Relaxing'}",
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                GestureDetector(
-                  onTap: () => _togglePlayPause(data['id'], data['audioPath']),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: isCurrentlyPlaying
-                          ? Colors.deepPurple
-                          : Colors.deepPurple[50],
-                      shape: BoxShape.circle,
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          MainNavigationPage.of(context)?.setMeditationMusic(data);
+                        },
+                        icon: const Icon(Icons.self_improvement),
+                        label: const Text('Use for Meditation'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.deepPurple,
+                          side: const BorderSide(color: Colors.deepPurple),
+                        ),
+                      ),
                     ),
-                    child: Icon(
-                      isCurrentlyPlaying ? Icons.pause : Icons.play_arrow,
-                      color: isCurrentlyPlaying ? Colors.white : Colors.deepPurple,
-                      size: 28,
-                    ),
-                  ),
+                  ],
                 ),
               ],
             ),

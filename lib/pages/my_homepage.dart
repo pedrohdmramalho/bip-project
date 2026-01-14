@@ -149,7 +149,9 @@ class MyHomePage extends StatelessWidget {
                     title: "Calming Music",
                     subtitle: "Listen to ambient sounds for deep focus.",
                     backgroundColor: const Color(0xFFFFF3E0),
-                    onTap: () => MainNavigationPage.of(context)?.changeTab(1),
+                    onTap: () {
+                      MainNavigationPage.of(context)?.changeTab(1);
+                    },
                   ),
 
                   RecommendationTile(

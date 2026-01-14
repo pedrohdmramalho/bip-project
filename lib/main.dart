@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart'; // Ensure firebase is initial
 import 'bloc/mood_bloc.dart';
 import 'data/repositories/mood_repository.dart';
 import 'pages/main_navigation_page.dart';
+import 'pages/meditation_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +29,14 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
         home: const MainNavigationPage(),
+        routes: {
+          '/meditation': (context) {
+            final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+            return MeditationPage(
+              selectedMusic: args,
+            );
+          },
+        },
       ),
     );
   }

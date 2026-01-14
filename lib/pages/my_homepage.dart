@@ -9,7 +9,25 @@ import '../pages/daily_reflection_page.dart';
 import '../pages/library_page.dart';
 import 'notifications_page.dart';
 import 'main_navigation_page.dart';
+import 'package:starteu/auth/services/auth_service.dart';
+import 'package:starteu/data/widgets/animated_cart.dart';
+import 'package:starteu/pages/create_ad_page.dart';
 
+class MyHomePage extends StatefulWidget {
+  final String title;
+  final AuthService authService;
+  const MyHomePage({super.key, required this.title, required this.authService});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  void _incrementCounter() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const CreateAdPage()));
+  }
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
 
@@ -61,7 +79,33 @@ class MyHomePage extends StatelessWidget {
                       MainNavigationPage.of(context)?.changeTab(2);
                     },
                   ),
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(widget.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () {
+              widget.authService.signOut();
+            },
+          ),
+        ],
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('project_ads')
+            .orderBy('createdAt', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
 
+          final docs = snapshot.data?.docs ?? [];
                   RecommendationTile(
                     icon: Icons.headphones,
                     title: "Calming Music",
@@ -72,6 +116,25 @@ class MyHomePage extends StatelessWidget {
                     },
                   ),
 
+          if (docs.isEmpty) {
+            return const Center(child: Text('No ads found'));
+          }
+
+          return ListView.builder(
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final data = docs[index].data() as Map<String, dynamic>;
+              return AnimatedAdCard(
+                index: index,
+                child: Card(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  child: ListTile(
+                    title: Text(data['title'] ?? ''),
+                    subtitle: Text(data['description'] ?? ''),
+                  ),
                   RecommendationTile(
                     icon: Icons.edit_note,
                     title: "Daily Reflection",
@@ -128,6 +191,14 @@ class MyHomePage extends StatelessWidget {
                 ),
               );
             },
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        tooltip: 'Add Ad',
+        child: const Icon(Icons.add),
+      ),
           ),
         ),
       ],

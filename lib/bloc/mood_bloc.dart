@@ -14,14 +14,26 @@ class SelectMood extends MoodEvent {
 class MoodState {
   final String? todayMood;
   final int streakCount;
+  final List<double> weeklyScores; 
   final bool isLoading;
 
-  MoodState({this.todayMood, this.streakCount = 0, this.isLoading = false});
+  MoodState({
+    this.todayMood, 
+    this.streakCount = 0, 
+    this.weeklyScores = const [], 
+    this.isLoading = false
+  });
 
-  MoodState copyWith({String? todayMood, int? streakCount, bool? isLoading}) {
+  MoodState copyWith({
+    String? todayMood, 
+    int? streakCount, 
+    List<double>? weeklyScores, 
+    bool? isLoading
+  }) {
     return MoodState(
       todayMood: todayMood ?? this.todayMood,
       streakCount: streakCount ?? this.streakCount,
+      weeklyScores: weeklyScores ?? this.weeklyScores,
       isLoading: isLoading ?? this.isLoading,
     );
   }
@@ -33,16 +45,21 @@ class MoodBloc extends Bloc<MoodEvent, MoodState> {
 
   MoodBloc({required this.repository}) : super(MoodState(isLoading: true)) {
     
+    // Événement de chargement initial
     on<LoadMoodStatus>((event, emit) async {
+      emit(state.copyWith(isLoading: true));
       try {
-        // Fetch both history (for streak) and today's label (for selection)
         final history = await repository.getMoodHistory();
         final String todayId = DateFormat('yyyy-MM-dd').format(DateTime.now());
         final String? savedMoodToday = await repository.getMoodForDate(todayId);
         
+        // Calcul des scores pour le graphique
+        final List<double> scores = await _fetchWeeklyScores();
+        
         emit(MoodState(
           todayMood: savedMoodToday, 
           streakCount: _calculateStreak(history),
+          weeklyScores: scores,
           isLoading: false,
         ));
       } catch (e) {
@@ -50,21 +67,49 @@ class MoodBloc extends Bloc<MoodEvent, MoodState> {
       }
     });
 
+    // Événement lors du clic sur un Mood
     on<SelectMood>((event, emit) async {
-      // Save to Firebase
       await repository.saveMood(event.moodLabel);
       
-      // Refresh history to ensure streak is accurate
       final history = await repository.getMoodHistory();
+      // On rafraîchit aussi les scores du graphique immédiatement
+      final List<double> scores = await _fetchWeeklyScores();
       
       emit(state.copyWith(
         todayMood: event.moodLabel,
         streakCount: _calculateStreak(history),
+        weeklyScores: scores,
       ));
     });
   }
 
-  // Algorithm to calculate the consecutive days streak
+  // --- FONCTIONS PRIVÉES DE LOGIQUE ---
+
+  // Transforme les labels Firestore en chiffres pour le graphique
+  double _moodToScore(String? label) {
+    switch (label) {
+      case 'Great': return 5.0;
+      case 'Good': return 4.0;
+      case 'Okay': return 3.0;
+      case 'Sad': return 2.0;
+      case 'Awful': return 1.0;
+      default: return 0.0; // 0 si pas de donnée pour ce jour
+    }
+  }
+
+  // Récupère les données des 7 derniers jours
+  Future<List<double>> _fetchWeeklyScores() async {
+    final List<String> last7Days = List.generate(7, (i) {
+      // Génère les dates de J-6 jusqu'à aujourd'hui
+      return DateFormat('yyyy-MM-dd').format(
+        DateTime.now().subtract(Duration(days: 6 - i))
+      );
+    });
+
+    final moodMap = await repository.getMoodLabelsForRange(last7Days);
+    return last7Days.map((date) => _moodToScore(moodMap[date])).toList();
+  }
+
   int _calculateStreak(List<String> dates) {
     if (dates.isEmpty) return 0;
     int streak = 0;
@@ -76,7 +121,6 @@ class MoodBloc extends Bloc<MoodEvent, MoodState> {
         streak++;
         checkDate = checkDate.subtract(const Duration(days: 1));
       } else if (i == 0) {
-        // If nothing today, check yesterday. If nothing yesterday, streak is broken.
         checkDate = checkDate.subtract(const Duration(days: 1));
       } else {
         break;

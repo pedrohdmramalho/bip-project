@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-//import 'dart:convert';
-//import 'package:http/http.dart' as http;
-//import '../config/api_keys.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../config/api_keys.dart';
 
 class LibraryPage extends StatefulWidget {
   final String title;
@@ -65,10 +65,11 @@ class _LibraryPageState extends State<LibraryPage> {
   }
 
   Future<void> fetchFreesoundTracks() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     
     List<Map<String, dynamic>> allTracks = [];
-    /*
+    
     try {
       for (var category in _categories) {
         if (category == 'All') continue;
@@ -79,6 +80,10 @@ class _LibraryPageState extends State<LibraryPage> {
         );
         
         final response = await http.get(url);
+
+        // IMPORTANT : Après chaque 'await', le widget a pu être quitté par l'utilisateur
+        if (!mounted) return;
+
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           final List results = data['results'] ?? [];
@@ -100,8 +105,9 @@ class _LibraryPageState extends State<LibraryPage> {
     } catch (e) {
       allTracks = _getExampleTracks();
     }
-    */
     
+    // 2. Vérifier une dernière fois avant de mettre à jour la liste finale
+    if (!mounted) return;
     setState(() {
       _musicList = allTracks;
       _isLoading = false;
@@ -216,10 +222,7 @@ class _LibraryPageState extends State<LibraryPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false, // Désactive le bouton retour automatique
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(

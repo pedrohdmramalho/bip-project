@@ -1,25 +1,23 @@
+import 'dart:convert'; // Pour décoder le JSON de l'API
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-<<<<<<< HEAD
-import 'package:starteu/bloc/daily_reflection_bloc.dart';
-import '../bloc/mood_bloc.dart';
-import '../widgets/streak_card.dart';
-import '../widgets/recommendation_tile.dart';
-import '../pages/meditation_page.dart';
-import '../pages/daily_reflection_page.dart';
-import '../pages/library_page.dart';
-import 'notifications_page.dart';
-import 'main_navigation_page.dart';
-=======
-import 'dart:convert'; // Pour décoder le JSON de l'API
 import 'package:http/http.dart' as http; // Pour l'appel API
-import '../config/api_keys.dart'; // Pour ta clé API
+
+// BLoCs
 import '../bloc/mood_bloc.dart';
+
+// Widgets
 import '../widgets/streak_card.dart';
 import '../widgets/recommendation_tile.dart';
+
+// Pages & Navigation
+import '../config/api_keys.dart';
 import 'notifications_page.dart'; 
 import 'main_navigation_page.dart'; 
->>>>>>> ba747c4c670e7f3af31b4f0f8753d354ecd91ff1
+import 'meditation_page.dart';
+import 'library_page.dart';
+import 'test_page.dart'; 
+import 'daily_reflection_page.dart';
 
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
@@ -151,10 +149,7 @@ class MyHomePage extends StatelessWidget {
                     title: "Calming Music",
                     subtitle: "Listen to ambient sounds for deep focus.",
                     backgroundColor: const Color(0xFFFFF3E0),
-<<<<<<< HEAD
-                    onTap: () {
-                      MainNavigationPage.of(context)?.changeTab(1);
-                    },
+                    onTap: () => MainNavigationPage.of(context)?.changeTab(1),
                   ),
 
                   RecommendationTile(
@@ -166,13 +161,10 @@ class MyHomePage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => DailyReflectionPage(),
+                          builder: (context) => const DailyReflectionPage(),
                         ),
                       );
                     },
-=======
-                    onTap: () => MainNavigationPage.of(context)?.changeTab(1),
->>>>>>> ba747c4c670e7f3af31b4f0f8753d354ecd91ff1
                   ),
                   const SizedBox(height: 20),
                 ],
@@ -193,32 +185,38 @@ class MyHomePage extends StatelessWidget {
         const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Good Morning,",
-              style: TextStyle(color: Colors.grey, fontSize: 14),
-            ),
-            Text(
-              "User",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
+            Text("Good Morning,", style: TextStyle(color: Colors.grey, fontSize: 14)),
+            Text("User", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           ],
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            shape: BoxShape.circle,
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.black),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const NotificationsPage(),
-                ),
-              );
-            },
-          ),
+        Row(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(right: 10),
+              decoration: BoxDecoration(color: Colors.deepPurple[50], shape: BoxShape.circle),
+              child: IconButton(
+                icon: const Icon(Icons.bar_chart_rounded, color: Colors.deepPurple),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const TestPage()),
+                  );
+                },
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
+              child: IconButton(
+                icon: const Icon(Icons.notifications_none, color: Colors.black),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const NotificationsPage()),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ],
     );

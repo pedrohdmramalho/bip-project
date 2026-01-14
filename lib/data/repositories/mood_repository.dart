@@ -41,4 +41,22 @@ class MoodRepository {
     // Returns a list of strings like ["2026-01-13", "2026-01-12"]
     return snapshot.docs.map((doc) => doc['date'] as String).toList();
   }
+
+  Future<Map<String, String>> getMoodLabelsForRange(List<String> dateIds) async {
+  Map<String, String> results = {};
+  
+  for (String dateId in dateIds) {
+    final doc = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('moods')
+        .doc(dateId)
+        .get();
+        
+    if (doc.exists) {
+      results[dateId] = doc.data()?['label'] as String;
+    }
+  }
+  return results; 
+}
 }

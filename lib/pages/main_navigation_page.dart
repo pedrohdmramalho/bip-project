@@ -15,6 +15,7 @@ State<MainNavigationPage> createState() => _MainNavigationPageState();
 
 class _MainNavigationPageState extends State<MainNavigationPage> {
   int _selectedIndex = 0;
+  Map<String, dynamic>? _selectedMusicForMeditation;
   String? _libraryCategory; // Stocke la catégorie cible
 
   // Mise à jour de la fonction pour accepter la catégorie
@@ -25,18 +26,31 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     });
   }
 
+void setMeditationMusic(Map<String, dynamic> music) {
+  setState(() {
+    _selectedMusicForMeditation = music;
+    _selectedIndex = 2; // Switch to meditation tab
+  });
+}
+
+  Widget _getPage(int index) {
+    switch (index) {
+      case 0:
+        return const MyHomePage();
+      case 1:
+        return LibraryPage(title: "Library", initialCategory: _libraryCategory);
+      case 2:
+        return MeditationPage(selectedMusic: _selectedMusicForMeditation);
+      case 3:
+        return const Center(child: Text('Profile'));
+      default:
+        return const MyHomePage();
+    }
+  }
   @override
   Widget build(BuildContext context) {
-    // On définit les pages ici pour injecter la catégorie dynamiquement
-    final List<Widget> _pages = [
-      const MyHomePage(),
-      LibraryPage(title: "Library", initialCategory: _libraryCategory),
-      const MeditationPage(),
-      const Center(child: Text('Profile')),
-    ];
-
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: _getPage(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {

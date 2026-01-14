@@ -5,8 +5,10 @@ import 'package:http/http.dart' as http;
 import '../config/api_keys.dart';
 
 class LibraryPage extends StatefulWidget {
-  const LibraryPage({super.key, required this.title});
   final String title;
+  final String? initialCategory; 
+
+  const LibraryPage({super.key, required this.title, this.initialCategory});
 
   @override
   State<LibraryPage> createState() => _LibraryPageState();
@@ -22,6 +24,7 @@ class _LibraryPageState extends State<LibraryPage> {
   bool _isLoading = true;
   String _searchQuery = '';
   String _selectedCategory = 'All';
+  
   
   final List<String> _categories = ['All', 'Sleep', 'Anxiety', 'Focus', 'Chill', 'Meditation'];
   
@@ -155,9 +158,11 @@ class _LibraryPageState extends State<LibraryPage> {
   @override
   void initState() {
     super.initState();
+    // Utilise la catégorie initiale si elle est fournie, sinon 'All'
+    _selectedCategory = widget.initialCategory ?? 'All';
     _setupAudioPlayer();
     fetchFreesoundTracks();
-  }
+}
 
   void _setupAudioPlayer() {
     _audioPlayer.onDurationChanged.listen((duration) {
@@ -304,6 +309,7 @@ class _LibraryPageState extends State<LibraryPage> {
         ],
       ),
     );
+    
   }
 
   Widget _buildMusicCard(Map<String, dynamic> data) {

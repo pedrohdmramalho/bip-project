@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_core/firebase_core.dart'; // Ensure firebase is initialized
-import 'bloc/mood_bloc.dart';
-import 'data/repositories/mood_repository.dart';
-import 'pages/main_navigation_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 import 'auth/services/auth_service.dart';
 import 'data/models/user_model.dart';
 import 'auth/screens/google_login_screen.dart';
-import 'auth/screens/home_screen.dart';
+
+// Import your navigation page
+import 'pages/main_navigation_page.dart';
+
+// Import Bloc/Repo for the Mental Health features
+import 'bloc/mood_bloc.dart';
+import 'data/repositories/mood_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Required for Firestore
-  runApp(const MyApp());
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Initialize the specific service you want to use
   final authService = FirebaseAuthService();
+
   runApp(MyApp(authService: authService));
 }
 
@@ -31,22 +34,19 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<MoodBloc>(
-          create: (context) => MoodBloc(
-            repository: MoodRepository(),
-          )..add(LoadMoodStatus()),
+          create: (context) =>
+              MoodBloc(repository: MoodRepository())..add(LoadMoodStatus()),
         ),
       ],
       child: MaterialApp(
+        title: 'Mental Health App',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
-        home: const MainNavigationPage(),
-    return MaterialApp(
-      title: 'Mental Health App',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        ),
+        home: AuthGate(authService: authService),
       ),
-      home: AuthGate(authService: authService),
     );
   }
 }
@@ -68,9 +68,8 @@ class AuthGate extends StatelessWidget {
         }
 
         if (snapshot.hasData) {
-          return HomeScreen(authService: authService);
+          return MainNavigationPage(authService: authService);
         }
-
         return GoogleLoginScreen(authService: authService);
       },
     );

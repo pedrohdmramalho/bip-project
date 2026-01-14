@@ -1,40 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:starteu/bloc/daily_reflection_bloc.dart';
-import '../bloc/mood_bloc.dart';
-import '../widgets/streak_card.dart';
-import '../widgets/recommendation_tile.dart';
-import '../pages/meditation_page.dart';
-import '../pages/daily_reflection_page.dart';
-import '../pages/library_page.dart';
-import 'notifications_page.dart';
-import 'main_navigation_page.dart';
 import 'package:starteu/auth/services/auth_service.dart';
-import 'package:starteu/data/widgets/animated_cart.dart';
-import 'package:starteu/pages/create_ad_page.dart';
+import 'package:starteu/bloc/mood_bloc.dart';
+import 'package:starteu/pages/notifications_page.dart';
+import 'package:starteu/pages/daily_reflection_page.dart';
+import 'package:starteu/widgets/recommendation_tile.dart';
+import 'package:starteu/widgets/streak_card.dart';
+import 'main_navigation_page.dart';
 
 class MyHomePage extends StatefulWidget {
-  final String title;
   final AuthService authService;
-  const MyHomePage({super.key, required this.title, required this.authService});
+
+  const MyHomePage({super.key, required this.authService});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  void _incrementCounter() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const CreateAdPage()));
-  }
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      // We keep the AppBar for the Logout button
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: _buildHeader(context), // Custom Header inside AppBar
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            tooltip: 'Logout',
+            onPressed: () {
+              widget.authService.signOut();
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
         child: BlocBuilder<MoodBloc, MoodState>(
           builder: (context, state) {
@@ -48,9 +50,6 @@ class MyHomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 10),
-                  _buildHeader(context),
-                  const SizedBox(height: 30),
-
                   const Text(
                     "How are you feeling today?",
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -75,37 +74,9 @@ class MyHomePage extends StatelessWidget {
                     subtitle: "A quick session to start your day focused.",
                     backgroundColor: const Color(0xFFE3F2FD),
                     onTap: () {
-                      // On demande à la page parente de changer d'onglet
                       MainNavigationPage.of(context)?.changeTab(2);
                     },
                   ),
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
-            onPressed: () {
-              widget.authService.signOut();
-            },
-          ),
-        ],
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('project_ads')
-            .orderBy('createdAt', descending: true)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          final docs = snapshot.data?.docs ?? [];
                   RecommendationTile(
                     icon: Icons.headphones,
                     title: "Calming Music",
@@ -114,26 +85,6 @@ class MyHomePage extends StatelessWidget {
                     onTap: () {
                       MainNavigationPage.of(context)?.changeTab(1);
                     },
-                  ),
-
-          if (docs.isEmpty) {
-            return const Center(child: Text('No ads found'));
-          }
-
-          return ListView.builder(
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
-              final data = docs[index].data() as Map<String, dynamic>;
-              return AnimatedAdCard(
-                index: index,
-                child: Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  child: ListTile(
-                    title: Text(data['title'] ?? ''),
-                    subtitle: Text(data['description'] ?? ''),
                   ),
                   RecommendationTile(
                     icon: Icons.edit_note,
@@ -144,7 +95,7 @@ class MyHomePage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => DailyReflectionPage(),
+                          builder: (context) => const DailyReflectionPage(),
                         ),
                       );
                     },
@@ -161,7 +112,6 @@ class MyHomePage extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,10 +122,15 @@ class MyHomePage extends StatelessWidget {
             ),
             Text(
               "User",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
           ],
         ),
+        const Spacer(),
         Container(
           decoration: BoxDecoration(
             color: Colors.grey[100],
@@ -191,14 +146,6 @@ class MyHomePage extends StatelessWidget {
                 ),
               );
             },
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Add Ad',
-        child: const Icon(Icons.add),
-      ),
           ),
         ),
       ],

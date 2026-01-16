@@ -49,7 +49,10 @@ class _TestPageState extends State<TestPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Analytics", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Analytics",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
       ),
@@ -58,47 +61,60 @@ class _TestPageState extends State<TestPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- GRAPHIQUE MOOD (CONSERVÉ) ---
-            const Text("Your Mood Progress", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text(
+              "Your Mood Progress",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
             BlocBuilder<MoodBloc, MoodState>(
-              builder: (context, state) => MoodChart(scores: state.weeklyScores),
+              builder: (context, state) =>
+                  MoodChart(scores: state.weeklyScores),
             ),
 
             const SizedBox(height: 40),
-
-            // --- CALENDRIER DE MÉDITATION NORMAL ---
-            const Text("Meditation Activity", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text(
+              "Meditation Activity",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
-            
+
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: const Color(0xFFF8F9FE),
                 borderRadius: BorderRadius.circular(24),
               ),
-              child: _isLoading 
-                ? const Center(child: CircularProgressIndicator())
-                : Column(
-                    children: [
-                      // En-tête du mois
-                      Text(
-                        DateFormat('MMMM yyyy').format(_currentMonth),
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      const SizedBox(height: 20),
-                      
-                      // Noms des jours (M, T, W...)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: _weekDays.map((day) => Text(day, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 12))).toList(),
-                      ),
-                      const SizedBox(height: 10),
-                      
-                      // Grille du calendrier
-                      _buildCalendarGrid(),
-                    ],
-                  ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : Column(
+                      children: [
+                        Text(
+                          DateFormat('MMMM yyyy').format(_currentMonth),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: _weekDays
+                              .map(
+                                (day) => Text(
+                                  day,
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                        const SizedBox(height: 10),
+                        _buildCalendarGrid(),
+                      ],
+                    ),
             ),
           ],
         ),
@@ -107,10 +123,13 @@ class _TestPageState extends State<TestPage> {
   }
 
   Widget _buildCalendarGrid() {
-    // Calculer le nombre de jours dans le mois
-    final daysInMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
-    // Trouver le premier jour de la semaine (0 pour Lundi, 6 pour Dimanche)
-    final firstDayOffset = DateTime(_currentMonth.year, _currentMonth.month, 1).weekday - 1;
+    final daysInMonth = DateTime(
+      _currentMonth.year,
+      _currentMonth.month + 1,
+      0,
+    ).day;
+    final firstDayOffset =
+        DateTime(_currentMonth.year, _currentMonth.month, 1).weekday - 1;
 
     return GridView.builder(
       shrinkWrap: true,
@@ -125,7 +144,8 @@ class _TestPageState extends State<TestPage> {
         if (index < firstDayOffset) return const SizedBox.shrink();
 
         final day = index - firstDayOffset + 1;
-        final dateKey = "${_currentMonth.year}-${_currentMonth.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
+        final dateKey =
+            "${_currentMonth.year}-${_currentMonth.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
         final count = _meditationCounts[dateKey] ?? 0;
 
         return Container(

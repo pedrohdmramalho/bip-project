@@ -15,7 +15,7 @@ class DailyReflectionPage extends StatelessWidget {
   const DailyReflectionPage({super.key});
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     final repo = DailyReflectionRepository(
       DailyReflectionRemoteDataSource(FirebaseFirestore.instance),
     );
@@ -24,7 +24,6 @@ class DailyReflectionPage extends StatelessWidget {
       create: (_) => DailyReflectionBloc(repo: repo),
       child: const _DailyReflectionView(),
     );
-
   }
 }
 
@@ -37,9 +36,9 @@ class _DailyReflectionView extends StatelessWidget {
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
         if (state.status == DailyReflectionStatus.success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Reflection saved!')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Reflection saved!')));
           Navigator.of(context).pop();
         }
 
@@ -77,28 +76,23 @@ class _DailyReflectionView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                'What made you smile today?',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
-              ),
+                  'What made you smile today?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
+                ),
               ),
               const SizedBox(height: 16),
               MoodSelector(),
               const SizedBox(height: 36),
-
-              // Faz o conteúdo acima ocupar o máximo do espaço
-              Expanded(
-                child: Container(),
-              ),
-
-              // Rodapé fixo: TextField + Button
+              Expanded(child: Container()),
               BlocBuilder<DailyReflectionBloc, DailyReflectionState>(
                 buildWhen: (previous, current) =>
                     previous.status != current.status ||
                     previous.mood != current.mood ||
                     previous.text != current.text,
                 builder: (context, state) {
-                  final isLoading = state.status == DailyReflectionStatus.loading;
+                  final isLoading =
+                      state.status == DailyReflectionStatus.loading;
                   final canSubmit = state.mood != null && state.text.isNotEmpty;
 
                   return Column(
@@ -107,9 +101,9 @@ class _DailyReflectionView extends StatelessWidget {
                       TextField(
                         maxLines: 6,
                         onChanged: (text) {
-                          context
-                              .read<DailyReflectionBloc>()
-                              .add(TextChanged(text));
+                          context.read<DailyReflectionBloc>().add(
+                            TextChanged(text),
+                          );
                         },
                         decoration: InputDecoration(
                           hintText: 'Start typing your thoughts...',
@@ -125,9 +119,9 @@ class _DailyReflectionView extends StatelessWidget {
                           onPressed: (!canSubmit || isLoading)
                               ? null
                               : () {
-                                  context
-                                      .read<DailyReflectionBloc>()
-                                      .add(SubmitPressed());
+                                  context.read<DailyReflectionBloc>().add(
+                                    SubmitPressed(),
+                                  );
                                 },
                           child: isLoading
                               ? const SizedBox(
@@ -138,7 +132,14 @@ class _DailyReflectionView extends StatelessWidget {
                                     color: Colors.white,
                                   ),
                                 )
-                              : const Text('Save Entry', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                              : const Text(
+                                  'Save Entry',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       ),
                     ],

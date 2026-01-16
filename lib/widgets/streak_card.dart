@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class StreakCard extends StatelessWidget {
   final int streakCount;
-  final double progress; // Valeur entre 0.0 et 1.0
+  final double progress;
 
   const StreakCard({
     super.key,
@@ -14,21 +14,28 @@ class StreakCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Logique de navigation vers les détails du streak ici
         print("Navigation vers les détails du streak");
       },
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFFF3E5F5), // Mauve très clair
+          color: const Color(0xFFF3E5F5),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Column(
           children: [
-            const Icon(Icons.local_fire_department, color: Colors.deepPurple, size: 40),
+            const Icon(
+              Icons.local_fire_department,
+              color: Colors.deepPurple,
+              size: 40,
+            ),
             Text(
               "$streakCount",
-              style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+              style: const TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
+              ),
             ),
             const Text(
               "Day Streak!",

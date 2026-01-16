@@ -1,15 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../../data/models/user_model.dart'; // Import your AppUser
-import 'auth_service.dart'; // Import the Interface
+import '../../data/models/user_model.dart';
+import 'auth_service.dart';
 
-// 1. You must implement AuthService
 class FirebaseAuthService implements AuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   bool _isInitialized = false;
 
-  // --- Helper to convert Firebase User -> AppUser ---
   AppUser? _userFromFirebase(User? user) {
     if (user == null) return null;
     return AppUser(
@@ -22,9 +20,6 @@ class FirebaseAuthService implements AuthService {
 
   Future<void> _initializeGoogleSignIn() async {
     if (!_isInitialized) {
-      // NOTE: .initialize() might not be needed depending on plugin version,
-      // but keeping it since you requested it.
-      // await _googleSignIn.initialize();
       _isInitialized = true;
     }
   }
@@ -33,18 +28,14 @@ class FirebaseAuthService implements AuthService {
   Future<bool> signInWithGoogle() async {
     try {
       await _initializeGoogleSignIn();
-
-      // NOTE: If you downgraded to version 6.2.1 (recommended for Android),
-      // use .signIn() instead of .authenticate()
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-
       if (googleUser == null) return false;
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
       final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken, // Required for Android usually
+        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
@@ -66,11 +57,9 @@ class FirebaseAuthService implements AuthService {
     await _googleSignIn.signOut();
   }
 
-  // 2. Return AppUser, not Firebase User
   @override
   AppUser? get currentUser => _userFromFirebase(_firebaseAuth.currentUser);
 
-  // 3. Map the Stream to AppUser
   @override
   Stream<AppUser?> get authStateChanges =>
       _firebaseAuth.authStateChanges().map(_userFromFirebase);

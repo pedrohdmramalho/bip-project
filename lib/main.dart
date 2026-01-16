@@ -2,37 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-
-// Services & Auth
 import 'auth/services/auth_service.dart';
 import 'auth/screens/google_login_screen.dart';
 import 'data/models/user_model.dart';
-
-// Repositories
 import 'data/repositories/mood_repository.dart';
 import 'data/repositories/meditation_repository.dart';
-
-// BLoC
 import 'bloc/mood_bloc.dart';
-
-// Pages
 import 'pages/main_navigation_page.dart';
 import 'pages/meditation_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   final authService = FirebaseAuthService();
   final meditationRepo = MeditationRepository();
-
-  runApp(MyApp(
-    authService: authService,
-    meditationRepo: meditationRepo,
-  ));
+  runApp(MyApp(authService: authService, meditationRepo: meditationRepo));
 }
 
 class MyApp extends StatelessWidget {
@@ -40,8 +25,8 @@ class MyApp extends StatelessWidget {
   final MeditationRepository meditationRepo;
 
   const MyApp({
-    super.key, 
-    required this.authService, 
+    super.key,
+    required this.authService,
     required this.meditationRepo,
   });
 
@@ -64,10 +49,10 @@ class MyApp extends StatelessWidget {
         home: AuthGate(authService: authService),
         routes: {
           '/meditation': (context) {
-            final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-            return MeditationPage(
-              selectedMusic: args,
-            );
+            final args =
+                ModalRoute.of(context)?.settings.arguments
+                    as Map<String, dynamic>?;
+            return MeditationPage(selectedMusic: args);
           },
         },
       ),
@@ -94,7 +79,7 @@ class AuthGate extends StatelessWidget {
         if (snapshot.hasData) {
           return MainNavigationPage(authService: authService);
         }
-        
+
         return GoogleLoginScreen(authService: authService);
       },
     );

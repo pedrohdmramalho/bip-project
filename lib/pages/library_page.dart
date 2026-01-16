@@ -7,7 +7,7 @@ import 'main_navigation_page.dart';
 
 class LibraryPage extends StatefulWidget {
   final String title;
-  final String? initialCategory; 
+  final String? initialCategory;
 
   const LibraryPage({super.key, required this.title, this.initialCategory});
 
@@ -25,10 +25,16 @@ class _LibraryPageState extends State<LibraryPage> {
   bool _isLoading = true;
   String _searchQuery = '';
   String _selectedCategory = 'All';
-  
-  
-  final List<String> _categories = ['All', 'Sleep', 'Anxiety', 'Focus', 'Chill', 'Meditation'];
-  
+
+  final List<String> _categories = [
+    'All',
+    'Sleep',
+    'Anxiety',
+    'Focus',
+    'Chill',
+    'Meditation',
+  ];
+
   final Map<String, String> _categoryQueries = {
     'Sleep': 'sleep relaxing ambient',
     'Anxiety': 'calm peaceful stress relief',
@@ -47,7 +53,6 @@ class _LibraryPageState extends State<LibraryPage> {
     };
     final baseSeed = categorySeeds[category] ?? 600;
     final seed = baseSeed + index;
-    // Picsum Photos API
     return 'https://picsum.photos/seed/$seed/400/200';
   }
 
@@ -68,52 +73,58 @@ class _LibraryPageState extends State<LibraryPage> {
   Future<void> fetchFreesoundTracks() async {
     if (!mounted) return;
     setState(() => _isLoading = true);
-    
+
     List<Map<String, dynamic>> allTracks = [];
     try {
       for (var category in _categories) {
         if (category == 'All') continue;
-        
+
         final query = _categoryQueries[category] ?? 'relaxing';
         final url = Uri.parse(
-          'https://freesound.org/apiv2/search/text/?query=$query&fields=id,name,previews,duration&token=${ApiKeys.freesoundApiKey}&page_size=10'
+          'https://freesound.org/apiv2/search/text/?query=$query&fields=id,name,previews,duration&token=${ApiKeys.freesoundApiKey}&page_size=10',
         );
-        
-        final response = await http.get(url);
 
-        // IMPORTANT : Après chaque 'await', le widget a pu être quitté par l'utilisateur
+        final response = await http.get(url);
         if (!mounted) return;
 
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           final List results = data['results'] ?? [];
-          
-          allTracks.addAll(results.asMap().entries.map((entry) {
-            final index = entry.key;
-            final item = entry.value;
-            return {
-              'id': '${category}_${item['id']}',
-              'title': item['name'] ?? 'No title',
-              'duration': (item['duration'] ?? 0).toStringAsFixed(0),
-              'category': category,
-              'imageUrl': _getUnsplashImage(category, index),
-              'audioPath': item['previews']?['preview-hq-mp3'] ?? item['previews']?['preview-lq-mp3'] ?? '',
-            };
-          }).where((track) => track['audioPath'].toString().isNotEmpty));
+
+          allTracks.addAll(
+            results
+                .asMap()
+                .entries
+                .map((entry) {
+                  final index = entry.key;
+                  final item = entry.value;
+                  return {
+                    'id': '${category}_${item['id']}',
+                    'title': item['name'] ?? 'No title',
+                    'duration': (item['duration'] ?? 0).toStringAsFixed(0),
+                    'category': category,
+                    'imageUrl': _getUnsplashImage(category, index),
+                    'audioPath':
+                        item['previews']?['preview-hq-mp3'] ??
+                        item['previews']?['preview-lq-mp3'] ??
+                        '',
+                  };
+                })
+                .where((track) => track['audioPath'].toString().isNotEmpty),
+          );
         }
       }
     } catch (e) {
       allTracks = _getExampleTracks();
     }
-    
-    // 2. Vérifier une dernière fois avant de mettre à jour la liste finale
+
     if (!mounted) return;
     setState(() {
       _musicList = allTracks;
       _isLoading = false;
     });
   }
-  
+
   List<Map<String, dynamic>> _getExampleTracks() {
     return [
       {
@@ -122,7 +133,8 @@ class _LibraryPageState extends State<LibraryPage> {
         'duration': '180',
         'category': 'Sleep',
         'imageUrl': _getUnsplashImage('Sleep', 0),
-        'audioPath': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+        'audioPath':
+            'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
       },
       {
         'id': 'example_2',
@@ -130,7 +142,8 @@ class _LibraryPageState extends State<LibraryPage> {
         'duration': '240',
         'category': 'Anxiety',
         'imageUrl': _getUnsplashImage('Anxiety', 1),
-        'audioPath': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+        'audioPath':
+            'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
       },
       {
         'id': 'example_3',
@@ -138,18 +151,21 @@ class _LibraryPageState extends State<LibraryPage> {
         'duration': '300',
         'category': 'Focus',
         'imageUrl': _getUnsplashImage('Focus', 2),
-        'audioPath': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+        'audioPath':
+            'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
       },
     ];
   }
 
   List<Map<String, dynamic>> get _filteredMusicList {
     var filtered = _musicList;
-    
+
     if (_selectedCategory != 'All') {
-      filtered = filtered.where((music) => music['category'] == _selectedCategory).toList();
+      filtered = filtered
+          .where((music) => music['category'] == _selectedCategory)
+          .toList();
     }
-    
+
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
       filtered = filtered.where((music) {
@@ -158,18 +174,17 @@ class _LibraryPageState extends State<LibraryPage> {
         return title.contains(query) || category.contains(query);
       }).toList();
     }
-    
+
     return filtered;
   }
 
   @override
   void initState() {
     super.initState();
-    // Utilise la catégorie initiale si elle est fournie, sinon 'All'
     _selectedCategory = widget.initialCategory ?? 'All';
     _setupAudioPlayer();
     fetchFreesoundTracks();
-}
+  }
 
   void _setupAudioPlayer() {
     _audioPlayer.onDurationChanged.listen((duration) {
@@ -199,7 +214,9 @@ class _LibraryPageState extends State<LibraryPage> {
         if (audioPath.startsWith('http')) {
           await _audioPlayer.play(UrlSource(audioPath));
         } else {
-          await _audioPlayer.play(AssetSource(audioPath.replaceFirst('assets/', '')));
+          await _audioPlayer.play(
+            AssetSource(audioPath.replaceFirst('assets/', '')),
+          );
         }
       } else {
         await _audioPlayer.resume();
@@ -222,12 +239,15 @@ class _LibraryPageState extends State<LibraryPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        automaticallyImplyLeading: false, // Désactive le bouton retour automatique
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
           widget.title,
-          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: const [
           Padding(
@@ -236,7 +256,7 @@ class _LibraryPageState extends State<LibraryPage> {
               radius: 15,
               child: Icon(Icons.person, size: 20),
             ),
-          )
+          ),
         ],
       ),
       body: Column(
@@ -285,7 +305,9 @@ class _LibraryPageState extends State<LibraryPage> {
                     selectedColor: Colors.deepPurple,
                     labelStyle: TextStyle(
                       color: isSelected ? Colors.white : Colors.black,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                 );
@@ -298,26 +320,26 @@ class _LibraryPageState extends State<LibraryPage> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _filteredMusicList.isEmpty
-                    ? const Center(child: Text('No music found'))
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: _filteredMusicList.length,
-                        itemBuilder: (context, index) {
-                          final music = _filteredMusicList[index];
-                          return _buildMusicCard(music);
-                        },
-                      ),
+                ? const Center(child: Text('No music found'))
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: _filteredMusicList.length,
+                    itemBuilder: (context, index) {
+                      final music = _filteredMusicList[index];
+                      return _buildMusicCard(music);
+                    },
+                  ),
           ),
 
           if (_currentPlayingId != null) _buildMiniPlayer(),
         ],
       ),
     );
-    
   }
 
   Widget _buildMusicCard(Map<String, dynamic> data) {
-    final bool isCurrentlyPlaying = _currentPlayingId == data['id'] && _isPlaying;
+    final bool isCurrentlyPlaying =
+        _currentPlayingId == data['id'] && _isPlaying;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
@@ -329,7 +351,7 @@ class _LibraryPageState extends State<LibraryPage> {
             color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 5),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -379,7 +401,8 @@ class _LibraryPageState extends State<LibraryPage> {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () => _togglePlayPause(data['id'], data['audioPath']),
+                      onTap: () =>
+                          _togglePlayPause(data['id'], data['audioPath']),
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
@@ -390,7 +413,9 @@ class _LibraryPageState extends State<LibraryPage> {
                         ),
                         child: Icon(
                           isCurrentlyPlaying ? Icons.pause : Icons.play_arrow,
-                          color: isCurrentlyPlaying ? Colors.white : Colors.deepPurple,
+                          color: isCurrentlyPlaying
+                              ? Colors.white
+                              : Colors.deepPurple,
                           size: 28,
                         ),
                       ),
@@ -403,7 +428,9 @@ class _LibraryPageState extends State<LibraryPage> {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () {
-                          MainNavigationPage.of(context)?.setMeditationMusic(data);
+                          MainNavigationPage.of(
+                            context,
+                          )?.setMeditationMusic(data);
                         },
                         icon: const Icon(Icons.self_improvement),
                         label: const Text('Use for Meditation'),

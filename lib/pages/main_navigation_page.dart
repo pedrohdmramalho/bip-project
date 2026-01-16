@@ -7,7 +7,6 @@ import 'profile_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
   final AuthService authService;
-
   const MainNavigationPage({super.key, required this.authService});
 
   static _MainNavigationPageState? of(BuildContext context) =>
@@ -20,8 +19,8 @@ class MainNavigationPage extends StatefulWidget {
 class _MainNavigationPageState extends State<MainNavigationPage> {
   int _selectedIndex = 0;
   Map<String, dynamic>? _selectedMusicForMeditation;
-  String? _libraryCategory; 
-  int? _suggestedMinutes; 
+  String? _libraryCategory;
+  int? _suggestedMinutes;
 
   void changeTab(int index, {String? libraryCategory, int? suggestedMinutes}) {
     setState(() {
@@ -47,7 +46,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       case 2:
         return MeditationPage(
           selectedMusic: _selectedMusicForMeditation,
-          suggestedMinutes: _suggestedMinutes, // Transmission du timer basé sur l'humeur
+          suggestedMinutes: _suggestedMinutes,
         );
       case 3:
         return ProfilePage(authService: widget.authService);

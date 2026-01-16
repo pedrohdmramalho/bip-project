@@ -22,16 +22,13 @@ import 'pages/meditation_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialisation de Firebase avec les options de la plateforme (Version distante)
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Initialisation des services et repositories
   final authService = FirebaseAuthService();
   final meditationRepo = MeditationRepository();
 
-  // On lance l'app en passant les deux dépendances
   runApp(MyApp(
     authService: authService,
     meditationRepo: meditationRepo,
@@ -42,7 +39,6 @@ class MyApp extends StatelessWidget {
   final AuthService authService;
   final MeditationRepository meditationRepo;
 
-  // Constructeur unique fusionné
   const MyApp({
     super.key, 
     required this.authService, 
@@ -65,7 +61,6 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
           colorSchemeSeed: Colors.deepPurple,
         ),
-        // AuthGate gère la redirection automatique
         home: AuthGate(authService: authService),
         routes: {
           '/meditation': (context) {

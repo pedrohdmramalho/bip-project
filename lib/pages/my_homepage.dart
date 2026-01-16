@@ -17,7 +17,7 @@ import '../widgets/recommendation_tile.dart';
 import '../config/api_keys.dart';
 import 'notifications_page.dart';
 import 'main_navigation_page.dart';
-import 'test_page.dart';
+import 'statistics_page.dart';
 import 'daily_reflection_page.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -192,35 +192,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ],
 
-                  // --- STATIC RECOMMENDATIONS ---
-                  RecommendationTile(
-                    icon: Icons.spa,
-                    title: "5-Min Morning Zen",
-                    subtitle: "A quick session to start your day focused.",
-                    backgroundColor: const Color(0xFFE3F2FD),
-                    onTap: () => MainNavigationPage.of(context)?.changeTab(2),
-                  ),
-                  RecommendationTile(
-                    icon: Icons.headphones,
-                    title: "Calming Music",
-                    subtitle: "Listen to ambient sounds for deep focus.",
-                    backgroundColor: const Color(0xFFFFF3E0),
-                    onTap: () => MainNavigationPage.of(context)?.changeTab(1),
-                  ),
-                  RecommendationTile(
-                    icon: Icons.edit_note,
-                    title: "Daily Reflection",
-                    subtitle: "Write down three things you're grateful for.",
-                    backgroundColor: const Color(0xFFE8F5E9),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DailyReflectionPage(),
-                        ),
-                      );
-                    },
-                  ),
+                  
                   const SizedBox(height: 20),
                 ],
               ),

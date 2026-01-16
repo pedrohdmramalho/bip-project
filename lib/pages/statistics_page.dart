@@ -17,7 +17,6 @@ class _TestPageState extends State<TestPage> {
   Map<String, int> _meditationCounts = {};
   bool _isLoading = true;
 
-  // Variables pour le calendrier
   late DateTime _currentMonth;
   final List<String> _weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 

@@ -63,7 +63,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
-          // Réinitialise la catégorie si on quitte l'onglet Library
           if (index != 1 && _selectedIndex == 1) {
             setState(() {
               _libraryCategory = null;

@@ -3,35 +3,51 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
+// Services & Auth
 import 'auth/services/auth_service.dart';
-import 'data/models/user_model.dart';
 import 'auth/screens/google_login_screen.dart';
+import 'data/models/user_model.dart';
 
-// Import your navigation page
-import 'pages/main_navigation_page.dart';
-
-// Import Bloc/Repo for the Mental Health features
-import 'bloc/mood_bloc.dart';
+// Repositories
 import 'data/repositories/mood_repository.dart';
+import 'data/repositories/meditation_repository.dart';
+
+// BLoC
+import 'bloc/mood_bloc.dart';
+
+// Pages
+import 'pages/main_navigation_page.dart';
 import 'pages/meditation_page.dart';
 import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   final authService = FirebaseAuthService();
+  final meditationRepo = MeditationRepository();
   final notificationService = NotificationService();
   await notificationService.initialize();
   await notificationService.scheduleDailyMeditationReminder();
 
-  runApp(MyApp(authService: authService));
+  runApp(MyApp(
+    authService: authService,
+    meditationRepo: meditationRepo,
+  ));
 }
 
 class MyApp extends StatelessWidget {
   final AuthService authService;
+  final MeditationRepository meditationRepo;
 
-  const MyApp({super.key, required this.authService});
+  const MyApp({
+    super.key, 
+    required this.authService, 
+    required this.meditationRepo,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +62,8 @@ class MyApp extends StatelessWidget {
         title: 'Mental Health App',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-            useMaterial3: true,
-            colorSchemeSeed: Colors.deepPurple,
+          useMaterial3: true,
+          colorSchemeSeed: Colors.deepPurple,
         ),
         home: AuthGate(authService: authService),
         routes: {
@@ -82,6 +98,7 @@ class AuthGate extends StatelessWidget {
         if (snapshot.hasData) {
           return MainNavigationPage(authService: authService);
         }
+        
         return GoogleLoginScreen(authService: authService);
       },
     );

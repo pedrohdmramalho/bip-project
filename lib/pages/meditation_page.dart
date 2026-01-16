@@ -7,6 +7,7 @@ import 'dart:math';
 import 'package:http/http.dart' as http;
 import '../config/api_keys.dart';
 import 'main_navigation_page.dart';
+import '../data/repositories/meditation_repository.dart';
 
 class SmoothBreathCurve extends Curve {
   const SmoothBreathCurve();
@@ -70,14 +71,10 @@ class BreathingFlowerPainter extends CustomPainter {
 }
 
 class MeditationPage extends StatefulWidget {
-  final String? selectedMusicId;
   final Map<String, dynamic>? selectedMusic;
+  final int? suggestedMinutes;
 
-  const MeditationPage({
-    super.key,
-    this.selectedMusicId,
-    this.selectedMusic,
-  });
+  const MeditationPage({super.key, this.selectedMusic, this.suggestedMinutes});
 
   @override
   State<MeditationPage> createState() => _MeditationPageState();
@@ -89,10 +86,11 @@ class _MeditationPageState extends State<MeditationPage>
   late Animation<double> _breathingAnimation;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-
+  late int _selectedMinutes;
+  
   final AudioPlayer _audioPlayer = AudioPlayer();
-
-  int _selectedMinutes = 25;
+  final MeditationRepository _meditationRepository = MeditationRepository();
+  
   bool _isSessionActive = false;
   bool _isPaused = false;
   Duration _sessionDuration = Duration.zero;
@@ -119,11 +117,51 @@ class _MeditationPageState extends State<MeditationPage>
     'Every breath brings clarity',
   ];
 
+  Future<void> _endSession() async {
+    await _audioPlayer.stop();
+    _sessionTimer?.cancel();
+    
+    final String formattedDuration = _formatDuration(_elapsedTime);
+    final String sessionTitle = _currentMusic?['title'] ?? 'General Meditation';
+    
+    await _meditationRepository.saveCompletedSession(
+      userId: "user_123", 
+      title: sessionTitle,
+      duration: formattedDuration,
+    );
+
+    setState(() {
+      _isSessionActive = false;
+      _isPaused = false;
+      _isPlayingMusic = false;
+      _breathingController.repeat();
+    });
+
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Meditation Complete!'),
+          content: Text('Session saved: $formattedDuration meditated.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _selectedMinutes = widget.suggestedMinutes ?? 25;
     _breathingController = AnimationController(
       duration: const Duration(seconds: 10),
+      
       vsync: this,
     )..repeat(reverse: true);
 
@@ -1071,36 +1109,57 @@ class _MeditationPageState extends State<MeditationPage>
   }
 
   Future<void> _loadMeditationMusic() async {
+    if (!mounted) return;
     setState(() => _isMusicLoading = true);
 
     List<Map<String, dynamic>> allTracks = [];
 
     try {
-      final url = Uri.parse(
-        'https://freesound.org/apiv2/search/text/?query=meditation zen mindfulness&fields=id,name,previews,duration&token=${ApiKeys.freesoundApiKey}&page_size=15'
-      );
+      final storedExercises = await _meditationRepository.fetchExercises();
+      
+      if (storedExercises.isNotEmpty) {
+        allTracks = storedExercises.map((e) => {
+          'id': e.id,
+          'title': e.title,
+          'duration': e.durationInMinutes.toString(),
+          'imageUrl': e.imageUrl,
+          'audioPath': e.audioUrl,
+        }).toList();
+      } else {
 
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final List results = data['results'] ?? [];
-
-        allTracks.addAll(results.asMap().entries.map((entry) {
-          final index = entry.key;
-          final item = entry.value;
-          return {
-            'id': 'med_${item['id']}',
-            'title': item['name'] ?? 'Untitled',
-            'duration': (item['duration'] ?? 0).toStringAsFixed(0),
-            'imageUrl': 'https://picsum.photos/seed/${500 + index}/400/200',
-            'audioPath': item['previews']?['preview-hq-mp3'] ?? item['previews']?['preview-lq-mp3'] ?? '',
-          };
-        }).where((track) => track['audioPath'].toString().isNotEmpty));
+        final url = Uri.parse(
+          'https://freesound.org/apiv2/search/text/?query=meditation zen mindfulness&fields=id,name,previews,duration&token=${ApiKeys.freesoundApiKey}&page_size=15'
+        );
+        
+        final response = await http.get(url);
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List results = data['results'] ?? [];
+          
+          allTracks = results.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            return {
+              'id': 'med_${item['id']}',
+              'title': item['name'] ?? 'Untitled',
+              'duration': (item['duration'] ?? 0).toStringAsFixed(0),
+              'imageUrl': 'https://picsum.photos/seed/${500 + index}/400/200',
+              'audioPath': item['previews']?['preview-hq-mp3'] ?? item['previews']?['preview-lq-mp3'] ?? '',
+            };
+          }).where((track) => track['audioPath'].toString().isNotEmpty).toList();
+        }
       }
     } catch (e) {
+      debugPrint('Erreur chargement musique: $e');
       allTracks = _getExampleMeditationTracks();
     }
 
+    if (!mounted) return;
+    setState(() {
+      _meditationMusicList = allTracks.isNotEmpty ? allTracks : _getExampleMeditationTracks();
+      _isMusicLoading = false;
+    });
+    
     setState(() {
       _meditationMusicList = allTracks.isNotEmpty ? allTracks : _getExampleMeditationTracks();
       _isMusicLoading = false;
@@ -1192,47 +1251,6 @@ class _MeditationPageState extends State<MeditationPage>
     });
   }
 
-  Future<void> _endSession() async {
-    await _audioPlayer.stop();
-    _sessionTimer?.cancel();
-
-    final elapsedTimeFormatted = _formatDuration(_elapsedTime);
-
-    setState(() {
-      _isSessionActive = false;
-      _isPaused = false;
-      _isPlayingMusic = false;
-      _breathingController.repeat();
-    });
-
-    // Show completion dialog
-    if (mounted) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (dialogContext) => AlertDialog(
-          title: const Text('Meditation Complete!'),
-          content: Text(
-            'Great job! You meditated for $elapsedTimeFormatted.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                // Navigate to Home after dialog closes
-                Future.delayed(const Duration(milliseconds: 100), () {
-                  if (mounted) {
-                    MainNavigationPage.of(context)?.changeTab(0);
-                  }
-                });
-              },
-              child: const Text('Close'),
-            ),
-          ],
-        ),
-      );
-    }
-  }
 
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -1259,7 +1277,7 @@ class _MeditationPageState extends State<MeditationPage>
     
     // Dispose audio player
     _audioPlayer.dispose();
-    
+    _sessionTimer?.cancel();
     super.dispose();
   }
 }

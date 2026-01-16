@@ -20,21 +20,21 @@ class MainNavigationPage extends StatefulWidget {
 class _MainNavigationPageState extends State<MainNavigationPage> {
   int _selectedIndex = 0;
   Map<String, dynamic>? _selectedMusicForMeditation;
-  String? _libraryCategory;
+  String? _libraryCategory; 
+  int? _suggestedMinutes; 
 
-  void changeTab(int index, {String? libraryCategory}) {
+  void changeTab(int index, {String? libraryCategory, int? suggestedMinutes}) {
     setState(() {
       _selectedIndex = index;
-      if (libraryCategory != null) {
-        _libraryCategory = libraryCategory;
-      }
+      _libraryCategory = libraryCategory;
+      _suggestedMinutes = suggestedMinutes;
     });
   }
 
   void setMeditationMusic(Map<String, dynamic> music) {
     setState(() {
       _selectedMusicForMeditation = music;
-      _selectedIndex = 2; // Switch to meditation tab
+      _selectedIndex = 2;
     });
   }
 
@@ -45,7 +45,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       case 1:
         return LibraryPage(title: "Library", initialCategory: _libraryCategory);
       case 2:
-        return MeditationPage(selectedMusic: _selectedMusicForMeditation);
+        return MeditationPage(
+          selectedMusic: _selectedMusicForMeditation,
+          suggestedMinutes: _suggestedMinutes, // Transmission du timer basé sur l'humeur
+        );
       case 3:
         return ProfilePage(authService: widget.authService);
       default:

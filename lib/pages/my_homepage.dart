@@ -1,16 +1,24 @@
-import 'dart:convert'; // Pour décoder le JSON de l'API
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:starteu/auth/services/auth_service.dart';
-import 'package:starteu/bloc/mood_bloc.dart';
-import 'package:starteu/pages/notifications_page.dart';
-import 'package:starteu/pages/daily_reflection_page.dart';
-import 'package:starteu/widgets/recommendation_tile.dart';
-import 'package:starteu/widgets/streak_card.dart';
-import 'main_navigation_page.dart';
 import 'package:http/http.dart' as http;
+
+// BLoCs
+import '../bloc/mood_bloc.dart';
+
+// Services & Models
+import '../auth/services/auth_service.dart';
+
+// Widgets
+import '../widgets/streak_card.dart';
+import '../widgets/recommendation_tile.dart';
+
+// Pages & Navigation
 import '../config/api_keys.dart';
-import 'test_page.dart';
+import 'notifications_page.dart';
+import 'main_navigation_page.dart';
+import 'statistics_page.dart';
+import 'daily_reflection_page.dart';
 
 class MyHomePage extends StatefulWidget {
   final AuthService authService;
@@ -21,19 +29,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // --- LOGIQUE DE MAPPING MOOD -> REQUÊTE API FREESOUND ---
-  String _getQueryForMood(String mood) {
-    switch (mood) {
-      case 'Great': return 'chill lofi relax';
-      case 'Good': return 'concentration study focus';
-      case 'Okay': return 'meditation zen mindfulness';
-      case 'Sad': return 'calm peaceful stress relief';
-      case 'Awful': return 'sleep relaxing ambient';
-      default: return 'relaxing';
-    }
-  }
+  
+  // --- HELPERS: MOOD MAPPING LOGIC ---
 
-  // --- MAPPING COHÉRENT : MOOD -> CATÉGORIE LIBRARY ---
   String _getLibraryCategoryForMood(String mood) {
     switch (mood) {
       case 'Great': return 'Chill';
@@ -45,7 +43,42 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  // --- APPEL API POUR RÉCUPÉRER UNE PISTE CORRESPONDANTE ---
+  String _getQueryForMood(String mood) {
+    switch (mood) {
+      case 'Great': return 'chill lofi relax';
+      case 'Good': return 'concentration study focus';
+      case 'Okay': return 'meditation zen mindfulness';
+      case 'Sad': return 'calm peaceful stress relief';
+      case 'Awful': return 'sleep relaxing ambient';
+      default: return 'relaxing';
+    }
+  }
+
+  int _getDurationForMood(String mood) {
+    switch (mood) {
+      case 'Great': return 5;
+      case 'Good': return 10;
+      case 'Okay': return 15;
+      case 'Sad': return 20;
+      case 'Awful': return 30;
+      default: return 10;
+    }
+  }
+
+  String _getMeditationTitle(String mood) {
+    int minutes = _getDurationForMood(mood);
+    switch (mood) {
+      case 'Great': return "$minutes-Min Joy Anchor";
+      case 'Good': return "$minutes-Min Daily Balance";
+      case 'Okay': return "$minutes-Min Mindful Reset";
+      case 'Sad': return "$minutes-Min Deep Calm";
+      case 'Awful': return "$minutes-Min Stress Relief";
+      default: return "$minutes-Min Meditation";
+    }
+  }
+
+  // --- API CALL FOR MUSIC ---
+
   Future<Map<String, dynamic>?> _fetchMoodMusic(String mood) async {
     final query = _getQueryForMood(mood);
     final url = Uri.parse(
@@ -61,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       }
     } catch (e) {
-      return null;
+      debugPrint('Error fetching music: $e');
     }
     return null;
   }
@@ -78,9 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black),
             tooltip: 'Logout',
-            onPressed: () {
-              widget.authService.signOut();
-            },
+            onPressed: () => widget.authService.signOut(),
           ),
         ],
       ),
@@ -115,20 +146,36 @@ class _MyHomePageState extends State<MyHomePage> {
                   _buildSectionHeader("Today's Recommendations"),
                   const SizedBox(height: 15),
 
-                  if (state.todayMood != null)
+                  // --- DYNAMIC RECOMMENDATIONS ---
+                  if (state.todayMood != null) ...[
+                    // 1. Meditation Recommendation based on Mood Timer
+                    RecommendationTile(
+                      icon: Icons.self_improvement,
+                      title: _getMeditationTitle(state.todayMood!),
+                      subtitle: "Ideal duration for your ${state.todayMood} mood",
+                      backgroundColor: const Color(0xFFEDE7F6),
+                      onTap: () {
+                        MainNavigationPage.of(context)?.changeTab(
+                          2,
+                          suggestedMinutes: _getDurationForMood(state.todayMood!),
+                        );
+                      },
+                    ),
+
+                    // 2. Music Recommendation based on API fetch
                     FutureBuilder<Map<String, dynamic>?>(
                       future: _fetchMoodMusic(state.todayMood!),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return const Padding(
-                            padding: EdgeInsets.only(bottom: 15),
+                            padding: EdgeInsets.symmetric(vertical: 10),
                             child: LinearProgressIndicator(),
                           );
                         }
                         if (snapshot.hasData && snapshot.data != null) {
                           return RecommendationTile(
                             icon: Icons.auto_awesome,
-                            title: "Perfect for your ${state.todayMood} mood",
+                            title: "Perfect music for your mood",
                             subtitle: snapshot.data!['name'] ?? "Tap to listen",
                             backgroundColor: const Color(0xFFF3E5F5),
                             onTap: () {
@@ -143,40 +190,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         return const SizedBox.shrink();
                       },
                     ),
+                  ],
 
-                  // --- RECOMMANDATIONS STATIQUES ---
-                  RecommendationTile(
-                    icon: Icons.spa,
-                    title: "5-Min Morning Zen",
-                    subtitle: "A quick session to start your day focused.",
-                    backgroundColor: const Color(0xFFE3F2FD),
-                    onTap: () {
-                      MainNavigationPage.of(context)?.changeTab(2);
-                    }
-                  ),
-                  RecommendationTile(
-                    icon: Icons.headphones,
-                    title: "Calming Music",
-                    subtitle: "Listen to ambient sounds for deep focus.",
-                    backgroundColor: const Color(0xFFFFF3E0),
-                    onTap: () {
-                      MainNavigationPage.of(context)?.changeTab(1);
-                    },
-                  ),
-                  RecommendationTile(
-                    icon: Icons.edit_note,
-                    title: "Daily Reflection",
-                    subtitle: "Write down three things you're grateful for.",
-                    backgroundColor: const Color(0xFFE8F5E9),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DailyReflectionPage(),
-                        ),
-                      );
-                    },
-                  ),
+                  
                   const SizedBox(height: 20),
                 ],
               ),
@@ -210,45 +226,21 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ],
         ),
-
         const Spacer(),
-
         Row(
           children: [
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(
-                color: Colors.deepPurple[50],
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.bar_chart_rounded, color: Colors.deepPurple),
-                tooltip: "Test Page",
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const TestPage()),
-                  );
-                },
-              ),
+            _headerCircleButton(
+              icon: Icons.bar_chart_rounded,
+              color: Colors.deepPurple,
+              bgColor: Colors.deepPurple[50]!,
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TestPage())),
             ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.notifications_none, color: Colors.black),
-                tooltip: "Notifications",
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const NotificationsPage(),
-                    ),
-                  );
-                },
-              ),
+            const SizedBox(width: 8),
+            _headerCircleButton(
+              icon: Icons.notifications_none,
+              color: Colors.black,
+              bgColor: Colors.grey[100]!,
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsPage())),
             ),
           ],
         ),
@@ -256,20 +248,21 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  Widget _headerCircleButton({required IconData icon, required Color color, required Color bgColor, required VoidCallback onPressed}) {
+    return Container(
+      decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
+      child: IconButton(icon: Icon(icon, color: color), onPressed: onPressed),
+    );
+  }
+
   Widget _buildSectionHeader(String title) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
+        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         TextButton(
           onPressed: () {},
-          child: const Text(
-            "See all",
-            style: TextStyle(color: Colors.deepPurple),
-          ),
+          child: const Text("See all", style: TextStyle(color: Colors.deepPurple)),
         ),
       ],
     );
@@ -306,10 +299,7 @@ class _MyHomePageState extends State<MyHomePage> {
             color: isSelected ? Colors.deepPurple : Colors.grey[100],
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Icon(
-            icon,
-            color: isSelected ? Colors.white : Colors.grey[600],
-          ),
+          child: Icon(icon, color: isSelected ? Colors.white : Colors.grey[600]),
         ),
         const SizedBox(height: 8),
         Text(

@@ -102,14 +102,17 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         title: _buildHeader(context),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black),
+            icon: Icon(
+              Icons.logout,
+              color: Theme.of(context).iconTheme.color,
+            ),
             tooltip: 'Logout',
             onPressed: () => widget.authService.signOut(),
           ),
@@ -128,9 +131,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 10),
-                  const Text(
+                  Text(
                     "How are you feeling today?",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 20),
 
@@ -153,7 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       icon: Icons.self_improvement,
                       title: _getMeditationTitle(state.todayMood!),
                       subtitle: "Ideal duration for your ${state.todayMood} mood",
-                      backgroundColor: const Color(0xFFEDE7F6),
+                      backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.9),
                       onTap: () {
                         MainNavigationPage.of(context)?.changeTab(
                           2,
@@ -177,7 +182,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             icon: Icons.auto_awesome,
                             title: "Perfect music for your mood",
                             subtitle: snapshot.data!['name'] ?? "Tap to listen",
-                            backgroundColor: const Color(0xFFF3E5F5),
+                            backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.9),
                             onTap: () {
                               final category = _getLibraryCategoryForMood(state.todayMood!);
                               MainNavigationPage.of(context)?.changeTab(
@@ -212,17 +217,17 @@ class _MyHomePageState extends State<MyHomePage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               "Good Morning,",
-              style: TextStyle(color: Colors.grey, fontSize: 14),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                  ),
             ),
             Text(
               displayName,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
           ],
         ),
@@ -231,15 +236,15 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             _headerCircleButton(
               icon: Icons.bar_chart_rounded,
-              color: Colors.deepPurple,
-              bgColor: Colors.deepPurple[50]!,
+              color: Theme.of(context).colorScheme.primary,
+              bgColor: Theme.of(context).colorScheme.primary.withOpacity(0.12),
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TestPage())),
             ),
             const SizedBox(width: 8),
             _headerCircleButton(
               icon: Icons.notifications_none,
-              color: Colors.black,
-              bgColor: Colors.grey[100]!,
+              color: Theme.of(context).iconTheme.color ?? Theme.of(context).colorScheme.onSurface,
+              bgColor: Theme.of(context).colorScheme.surfaceVariant,
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsPage())),
             ),
           ],
@@ -259,10 +264,11 @@ class _MyHomePageState extends State<MyHomePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        TextButton(
-          onPressed: () {},
-          child: const Text("See all", style: TextStyle(color: Colors.deepPurple)),
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
         ),
       ],
     );
@@ -296,17 +302,26 @@ class _MyHomePageState extends State<MyHomePage> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.deepPurple : Colors.grey[100],
+            color: isSelected
+                ? Theme.of(context).colorScheme.primaryContainer
+                : Theme.of(context).colorScheme.surfaceVariant,
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Icon(icon, color: isSelected ? Colors.white : Colors.grey[600]),
+          child: Icon(
+            icon,
+            color: isSelected
+                ? Theme.of(context).colorScheme.onPrimaryContainer
+                : Theme.of(context).iconTheme.color?.withOpacity(0.7),
+          ),
         ),
         const SizedBox(height: 8),
         Text(
           label,
           style: TextStyle(
             fontSize: 12,
-            color: isSelected ? Colors.deepPurple : Colors.grey[600],
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),

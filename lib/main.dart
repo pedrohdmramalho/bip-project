@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 
 // Services & Auth
@@ -19,6 +20,9 @@ import 'bloc/mood_bloc.dart';
 import 'pages/main_navigation_page.dart';
 import 'pages/meditation_page.dart';
 import 'services/notification_service.dart';
+
+// Config
+import 'config/theme_mode_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,28 +55,42 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<MoodBloc>(
-          create: (context) =>
-              MoodBloc(repository: MoodRepository())..add(LoadMoodStatus()),
-        ),
-      ],
-      child: MaterialApp(
-        title: 'Balance',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          colorSchemeSeed: Colors.deepPurple,
-        ),
-        home: AuthGate(authService: authService),
-        routes: {
-          '/meditation': (context) {
-            final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-            return MeditationPage(
-              selectedMusic: args,
-            );
-          },
+    return ChangeNotifierProvider(
+      create: (context) => ThemeModeManager(),
+      child: Consumer<ThemeModeManager>(
+        builder: (context, themeModeManager, _) {
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider<MoodBloc>(
+                create: (context) =>
+                    MoodBloc(repository: MoodRepository())..add(LoadMoodStatus()),
+              ),
+            ],
+            child: MaterialApp(
+              title: 'Balance',
+              debugShowCheckedModeBanner: false,
+              themeMode: themeModeManager.themeMode,
+              theme: ThemeData(
+                useMaterial3: true,
+                colorSchemeSeed: Colors.deepPurple,
+                brightness: Brightness.light,
+              ),
+              darkTheme: ThemeData(
+                useMaterial3: true,
+                colorSchemeSeed: Colors.deepPurple,
+                brightness: Brightness.dark,
+              ),
+              home: AuthGate(authService: authService),
+              routes: {
+                '/meditation': (context) {
+                  final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+                  return MeditationPage(
+                    selectedMusic: args,
+                  );
+                },
+              },
+            ),
+          );
         },
       ),
     );

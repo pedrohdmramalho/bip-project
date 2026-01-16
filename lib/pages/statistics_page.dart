@@ -46,11 +46,18 @@ class _TestPageState extends State<TestPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("Analytics", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
+        title: Text(
+          "Analytics",
+          style: TextStyle(
+            color: isDarkMode ? Colors.white : Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -74,7 +81,7 @@ class _TestPageState extends State<TestPage> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8F9FE),
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(24),
               ),
               child: _isLoading 
@@ -139,7 +146,9 @@ class _TestPageState extends State<TestPage> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: count > 1 ? Colors.white : Colors.black87,
+              color: count > 1
+                  ? Colors.white
+                  : Theme.of(context).colorScheme.onSurface,
             ),
           ),
         );

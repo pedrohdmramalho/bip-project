@@ -22,11 +22,10 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      // We keep the AppBar for the Logout button
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: _buildHeader(context), // Custom Header inside AppBar
+        title: _buildHeader(context),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black),
@@ -111,18 +110,21 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final user = widget.authService.currentUser;
+    final displayName = user?.displayName ?? 'User';
+
     return Row(
       children: [
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Good Morning,",
+            const Text(
+              "Hello,",
               style: TextStyle(color: Colors.grey, fontSize: 14),
             ),
             Text(
-              "User",
-              style: TextStyle(
+              displayName,
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,

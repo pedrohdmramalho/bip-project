@@ -8,7 +8,8 @@ class MeditationPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Meditation"),
-        automaticallyImplyLeading: false, // Cache la flèche car on est dans un onglet
+        automaticallyImplyLeading:
+            false, // Cache la flèche car on est dans un onglet
         centerTitle: true,
       ),
       body: const Center(child: Text("Meditation Content")),

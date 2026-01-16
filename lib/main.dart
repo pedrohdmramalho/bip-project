@@ -46,7 +46,6 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
             useMaterial3: true,
             colorSchemeSeed: Colors.deepPurple,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)
         ),
         home: AuthGate(authService: authService),
         routes: {

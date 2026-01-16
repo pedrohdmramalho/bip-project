@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_core/firebase_core.dart'; // Ensure firebase is initialized
+import 'package:firebase_core/firebase_core.dart';
 import 'bloc/mood_bloc.dart';
 import 'data/repositories/mood_repository.dart';
+import 'data/repositories/meditation_repository.dart';
 import 'pages/main_navigation_page.dart';
 import 'pages/meditation_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Required for Firestore
-  runApp(const MyApp());
+  await Firebase.initializeApp();
+  final meditationRepo = MeditationRepository();
+  runApp(MyApp(meditationRepo: meditationRepo));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final MeditationRepository meditationRepo; 
+
+  const MyApp({super.key, required this.meditationRepo});
 
   @override
   Widget build(BuildContext context) {

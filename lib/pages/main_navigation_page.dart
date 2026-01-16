@@ -16,22 +16,23 @@ State<MainNavigationPage> createState() => _MainNavigationPageState();
 class _MainNavigationPageState extends State<MainNavigationPage> {
   int _selectedIndex = 0;
   Map<String, dynamic>? _selectedMusicForMeditation;
-  String? _libraryCategory; // Stocke la catégorie cible
+  String? _libraryCategory; 
+  int? _suggestedMinutes; 
 
-  // Mise à jour de la fonction pour accepter la catégorie
-  void changeTab(int index, {String? libraryCategory}) {
+  void changeTab(int index, {String? libraryCategory, int? suggestedMinutes}) {
     setState(() {
       _selectedIndex = index;
       _libraryCategory = libraryCategory;
+      _suggestedMinutes = suggestedMinutes; // Save the value here
     });
   }
 
-void setMeditationMusic(Map<String, dynamic> music) {
-  setState(() {
-    _selectedMusicForMeditation = music;
-    _selectedIndex = 2; // Switch to meditation tab
-  });
-}
+  void setMeditationMusic(Map<String, dynamic> music) {
+    setState(() {
+      _selectedMusicForMeditation = music;
+      _selectedIndex = 2; 
+    });
+  }
 
   Widget _getPage(int index) {
     switch (index) {
@@ -40,7 +41,10 @@ void setMeditationMusic(Map<String, dynamic> music) {
       case 1:
         return LibraryPage(title: "Library", initialCategory: _libraryCategory);
       case 2:
-        return MeditationPage(selectedMusic: _selectedMusicForMeditation);
+        return MeditationPage(
+          selectedMusic: _selectedMusicForMeditation,
+          suggestedMinutes: _suggestedMinutes, 
+        );
       case 3:
         return const Center(child: Text('Profile'));
       default:
@@ -54,7 +58,6 @@ void setMeditationMusic(Map<String, dynamic> music) {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
-          // Si on change d'onglet manuellement, on réinitialise le filtre
           if (index != 1) {
             setState(() {
               _libraryCategory = null;

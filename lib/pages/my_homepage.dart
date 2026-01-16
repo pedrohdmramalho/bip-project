@@ -1,7 +1,7 @@
-import 'dart:convert'; // Pour décoder le JSON de l'API
+import 'dart:convert'; 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http; // Pour l'appel API
+import 'package:http/http.dart' as http; 
 
 // BLoCs
 import '../bloc/mood_bloc.dart';
@@ -22,7 +22,6 @@ import 'daily_reflection_page.dart';
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
   
-  // --- MAPPING COHÉRENT : MOOD -> CATÉGORIE LIBRARY ---
   String _getLibraryCategoryForMood(String mood) {
     switch (mood) {
       case 'Great': return 'Chill';
@@ -34,7 +33,18 @@ class MyHomePage extends StatelessWidget {
     }
   }
 
-  // --- LOGIQUE DE MAPPING MOOD -> REQUÊTE API FREESOUND ---
+  String _getMeditationTitle(String mood) {
+    int minutes = _getDurationForMood(mood);
+    switch (mood) {
+      case 'Great': return "$minutes-Min Joy Anchor";
+      case 'Good': return "$minutes-Min Daily Balance";
+      case 'Okay': return "$minutes-Min Mindful Reset";
+      case 'Sad': return "$minutes-Min Deep Calm";
+      case 'Awful': return "$minutes-Min Stress Relief";
+      default: return "$minutes-Min Meditation";
+    }
+  }
+
   String _getQueryForMood(String mood) {
     switch (mood) {
       case 'Great': return 'chill lofi relax';
@@ -45,6 +55,41 @@ class MyHomePage extends StatelessWidget {
       default: return 'relaxing';
     }
   }
+
+  int _getSuggestedDuration(String mood) {
+  switch (mood) {
+    case 'Great': return 5;   // Short session to anchor joy
+    case 'Good': return 10;  // Standard balance
+    case 'Okay': return 15;  // Need some centering
+    case 'Sad': return 20;   // Deeper processing needed
+    case 'Awful': return 30; // Intensive calm/relief
+    default: return 10;
+  }
+}
+
+int _getDurationForMood(String mood) {
+  switch (mood) {
+    case 'Great': return 5;
+    case 'Good': return 10;
+    case 'Okay': return 15;
+    case 'Sad': return 20;
+    case 'Awful': return 30;
+    default: return 10;
+  }
+}
+
+// Dynamic titles for the Recommendation Tile
+String _getRecommendationTitle(String mood) {
+  int minutes = _getDurationForMood(mood);
+  switch (mood) {
+    case 'Great': return "$minutes-Min Joy Anchor";
+    case 'Good': return "$minutes-Min Daily Balance";
+    case 'Okay': return "$minutes-Min Mindful Reset";
+    case 'Sad': return "$minutes-Min Deep Calm";
+    case 'Awful': return "$minutes-Min Stress Relief";
+    default: return "$minutes-Min Meditation";
+  }
+}
 
   // --- APPEL API POUR RÉCUPÉRER UNE PISTE CORRESPONDANTE ---
   Future<Map<String, dynamic>?> _fetchMoodMusic(String mood) async {
@@ -105,69 +150,49 @@ class MyHomePage extends StatelessWidget {
                   _buildSectionHeader("Today's Recommendations"),
                   const SizedBox(height: 15),
 
-                  // --- RECOMMANDATION DYNAMIQUE BASÉE SUR L'HUMEUR ---
-                  if (state.todayMood != null)
+                  // --- DYNAMIC RECOMMENDATION BASED ON MOOD ---
+                  if (state.todayMood != null) ...[
+                    // 1. DYNAMIC MEDITATION RECOMMENDATION
+                    RecommendationTile(
+                      icon: Icons.self_improvement,
+                      title: _getMeditationTitle(state.todayMood!),
+                      subtitle: "Ideal duration for your ${state.todayMood} mood",
+                      backgroundColor: const Color(0xFFEDE7F6),
+                      onTap: () {
+                        MainNavigationPage.of(context)?.changeTab(
+                          2, 
+                          suggestedMinutes: _getDurationForMood(state.todayMood!),
+                        );
+                      },
+                    ),
+
+                    // 2. DYNAMIC MUSIC RECOMMENDATION (RESTORED)
                     FutureBuilder<Map<String, dynamic>?>(
                       future: _fetchMoodMusic(state.todayMood!),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return const Padding(
-                            padding: EdgeInsets.only(bottom: 15),
+                            padding: EdgeInsets.symmetric(vertical: 10),
                             child: LinearProgressIndicator(),
                           );
                         }
                         if (snapshot.hasData && snapshot.data != null) {
                           return RecommendationTile(
                             icon: Icons.auto_awesome,
-                            title: "Perfect for your ${state.todayMood} mood",
+                            title: "Perfect music for your mood",
                             subtitle: snapshot.data!['name'] ?? "Tap to listen",
                             backgroundColor: const Color(0xFFF3E5F5), 
                             onTap: () {
                               final category = _getLibraryCategoryForMood(state.todayMood!);
-                              MainNavigationPage.of(context)?.changeTab(
-                                1, 
-                                libraryCategory: category,
-                              );
+                              MainNavigationPage.of(context)?.changeTab(1, libraryCategory: category);
                             },
                           );
                         }
                         return const SizedBox.shrink();
                       },
                     ),
-
-                  // --- RECOMMANDATIONS STATIQUES ---
-                  RecommendationTile(
-                    icon: Icons.spa,
-                    title: "5-Min Morning Zen",
-                    subtitle: "A quick session to start your day focused.",
-                    backgroundColor: const Color(0xFFE3F2FD),
-                    onTap: () => MainNavigationPage.of(context)?.changeTab(2),
-                  ),
-
-                  RecommendationTile(
-                    icon: Icons.headphones,
-                    title: "Calming Music",
-                    subtitle: "Listen to ambient sounds for deep focus.",
-                    backgroundColor: const Color(0xFFFFF3E0),
-                    onTap: () {
-                      MainNavigationPage.of(context)?.changeTab(1);
-                    },
-                  ),
-
-                  RecommendationTile(
-                    icon: Icons.edit_note,
-                    title: "Daily Reflection",
-                    subtitle: "Write down three things you're grateful for.",
-                    backgroundColor: const Color(0xFFE8F5E9),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DailyReflectionPage(),
-                        ),
-                      );
-                    },
-                  ),
+                  ],
+                  
                   const SizedBox(height: 20),
                 ],
               ),
@@ -177,9 +202,7 @@ class MyHomePage extends StatelessWidget {
       ),
     );
   }
-
-  // --- WIDGETS DE CONSTRUCTION ---
-
+  
   Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -257,7 +280,10 @@ class MyHomePage extends StatelessWidget {
       children: moods.map((mood) {
         final bool isSelected = currentMood == mood['label'];
         return GestureDetector(
-          onTap: () => context.read<MoodBloc>().add(SelectMood(mood['label'])),
+          onTap: () {
+            // WE ONLY SELECT THE MOOD, NO REDIRECTION HERE
+            context.read<MoodBloc>().add(SelectMood(mood['label']));
+          },
           child: _moodItem(mood['icon'], mood['label'], isSelected),
         );
       }).toList(),

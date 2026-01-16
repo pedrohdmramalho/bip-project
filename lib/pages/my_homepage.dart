@@ -1,10 +1,13 @@
-import 'dart:convert'; 
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http; 
+import 'package:http/http.dart' as http;
 
 // BLoCs
 import '../bloc/mood_bloc.dart';
+
+// Services & Models
+import '../auth/services/auth_service.dart';
 
 // Widgets
 import '../widgets/streak_card.dart';
@@ -12,16 +15,23 @@ import '../widgets/recommendation_tile.dart';
 
 // Pages & Navigation
 import '../config/api_keys.dart';
-import 'notifications_page.dart'; 
-import 'main_navigation_page.dart'; 
-import 'meditation_page.dart';
-import 'library_page.dart';
-import 'test_page.dart'; 
+import 'notifications_page.dart';
+import 'main_navigation_page.dart';
+import 'test_page.dart';
 import 'daily_reflection_page.dart';
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
+class MyHomePage extends StatefulWidget {
+  final AuthService authService;
+  const MyHomePage({super.key, required this.authService});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
   
+  // --- HELPERS: MOOD MAPPING LOGIC ---
+
   String _getLibraryCategoryForMood(String mood) {
     switch (mood) {
       case 'Great': return 'Chill';
@@ -30,6 +40,28 @@ class MyHomePage extends StatelessWidget {
       case 'Sad': return 'Anxiety';
       case 'Awful': return 'Sleep';
       default: return 'All';
+    }
+  }
+
+  String _getQueryForMood(String mood) {
+    switch (mood) {
+      case 'Great': return 'chill lofi relax';
+      case 'Good': return 'concentration study focus';
+      case 'Okay': return 'meditation zen mindfulness';
+      case 'Sad': return 'calm peaceful stress relief';
+      case 'Awful': return 'sleep relaxing ambient';
+      default: return 'relaxing';
+    }
+  }
+
+  int _getDurationForMood(String mood) {
+    switch (mood) {
+      case 'Great': return 5;
+      case 'Good': return 10;
+      case 'Okay': return 15;
+      case 'Sad': return 20;
+      case 'Awful': return 30;
+      default: return 10;
     }
   }
 
@@ -45,59 +77,14 @@ class MyHomePage extends StatelessWidget {
     }
   }
 
-  String _getQueryForMood(String mood) {
-    switch (mood) {
-      case 'Great': return 'chill lofi relax';
-      case 'Good': return 'concentration study focus';
-      case 'Okay': return 'meditation zen mindfulness';
-      case 'Sad': return 'calm peaceful stress relief';
-      case 'Awful': return 'sleep relaxing ambient';
-      default: return 'relaxing';
-    }
-  }
+  // --- API CALL FOR MUSIC ---
 
-  int _getSuggestedDuration(String mood) {
-  switch (mood) {
-    case 'Great': return 5;   // Short session to anchor joy
-    case 'Good': return 10;  // Standard balance
-    case 'Okay': return 15;  // Need some centering
-    case 'Sad': return 20;   // Deeper processing needed
-    case 'Awful': return 30; // Intensive calm/relief
-    default: return 10;
-  }
-}
-
-int _getDurationForMood(String mood) {
-  switch (mood) {
-    case 'Great': return 5;
-    case 'Good': return 10;
-    case 'Okay': return 15;
-    case 'Sad': return 20;
-    case 'Awful': return 30;
-    default: return 10;
-  }
-}
-
-// Dynamic titles for the Recommendation Tile
-String _getRecommendationTitle(String mood) {
-  int minutes = _getDurationForMood(mood);
-  switch (mood) {
-    case 'Great': return "$minutes-Min Joy Anchor";
-    case 'Good': return "$minutes-Min Daily Balance";
-    case 'Okay': return "$minutes-Min Mindful Reset";
-    case 'Sad': return "$minutes-Min Deep Calm";
-    case 'Awful': return "$minutes-Min Stress Relief";
-    default: return "$minutes-Min Meditation";
-  }
-}
-
-  // --- APPEL API POUR RÉCUPÉRER UNE PISTE CORRESPONDANTE ---
   Future<Map<String, dynamic>?> _fetchMoodMusic(String mood) async {
     final query = _getQueryForMood(mood);
     final url = Uri.parse(
       'https://freesound.org/apiv2/search/text/?query=$query&fields=name&token=${ApiKeys.freesoundApiKey}&page_size=1'
     );
-    
+
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -107,7 +94,7 @@ String _getRecommendationTitle(String mood) {
         }
       }
     } catch (e) {
-      return null;
+      debugPrint('Error fetching music: $e');
     }
     return null;
   }
@@ -116,6 +103,18 @@ String _getRecommendationTitle(String mood) {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: _buildHeader(context),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            tooltip: 'Logout',
+            onPressed: () => widget.authService.signOut(),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: BlocBuilder<MoodBloc, MoodState>(
           builder: (context, state) {
@@ -129,9 +128,6 @@ String _getRecommendationTitle(String mood) {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 10),
-                  _buildHeader(context),
-                  const SizedBox(height: 30),
-
                   const Text(
                     "How are you feeling today?",
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -150,9 +146,9 @@ String _getRecommendationTitle(String mood) {
                   _buildSectionHeader("Today's Recommendations"),
                   const SizedBox(height: 15),
 
-                  // --- DYNAMIC RECOMMENDATION BASED ON MOOD ---
+                  // --- DYNAMIC RECOMMENDATIONS ---
                   if (state.todayMood != null) ...[
-                    // 1. DYNAMIC MEDITATION RECOMMENDATION
+                    // 1. Meditation Recommendation based on Mood Timer
                     RecommendationTile(
                       icon: Icons.self_improvement,
                       title: _getMeditationTitle(state.todayMood!),
@@ -160,13 +156,13 @@ String _getRecommendationTitle(String mood) {
                       backgroundColor: const Color(0xFFEDE7F6),
                       onTap: () {
                         MainNavigationPage.of(context)?.changeTab(
-                          2, 
+                          2,
                           suggestedMinutes: _getDurationForMood(state.todayMood!),
                         );
                       },
                     ),
 
-                    // 2. DYNAMIC MUSIC RECOMMENDATION (RESTORED)
+                    // 2. Music Recommendation based on API fetch
                     FutureBuilder<Map<String, dynamic>?>(
                       future: _fetchMoodMusic(state.todayMood!),
                       builder: (context, snapshot) {
@@ -181,10 +177,13 @@ String _getRecommendationTitle(String mood) {
                             icon: Icons.auto_awesome,
                             title: "Perfect music for your mood",
                             subtitle: snapshot.data!['name'] ?? "Tap to listen",
-                            backgroundColor: const Color(0xFFF3E5F5), 
+                            backgroundColor: const Color(0xFFF3E5F5),
                             onTap: () {
                               final category = _getLibraryCategoryForMood(state.todayMood!);
-                              MainNavigationPage.of(context)?.changeTab(1, libraryCategory: category);
+                              MainNavigationPage.of(context)?.changeTab(
+                                1,
+                                libraryCategory: category,
+                              );
                             },
                           );
                         }
@@ -192,7 +191,36 @@ String _getRecommendationTitle(String mood) {
                       },
                     ),
                   ],
-                  
+
+                  // --- STATIC RECOMMENDATIONS ---
+                  RecommendationTile(
+                    icon: Icons.spa,
+                    title: "5-Min Morning Zen",
+                    subtitle: "A quick session to start your day focused.",
+                    backgroundColor: const Color(0xFFE3F2FD),
+                    onTap: () => MainNavigationPage.of(context)?.changeTab(2),
+                  ),
+                  RecommendationTile(
+                    icon: Icons.headphones,
+                    title: "Calming Music",
+                    subtitle: "Listen to ambient sounds for deep focus.",
+                    backgroundColor: const Color(0xFFFFF3E0),
+                    onTap: () => MainNavigationPage.of(context)?.changeTab(1),
+                  ),
+                  RecommendationTile(
+                    icon: Icons.edit_note,
+                    title: "Daily Reflection",
+                    subtitle: "Write down three things you're grateful for.",
+                    backgroundColor: const Color(0xFFE8F5E9),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DailyReflectionPage(),
+                        ),
+                      );
+                    },
+                  ),
                   const SizedBox(height: 20),
                 ],
               ),
@@ -202,44 +230,45 @@ String _getRecommendationTitle(String mood) {
       ),
     );
   }
-  
+
   Widget _buildHeader(BuildContext context) {
+    final user = widget.authService.currentUser;
+    final displayName = user?.displayName ?? 'User';
+
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Good Morning,", style: TextStyle(color: Colors.grey, fontSize: 14)),
-            Text("User", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          ],
-        ),
-        Row(
-          children: [
-            Container(
-              margin: const EdgeInsets.only(right: 10),
-              decoration: BoxDecoration(color: Colors.deepPurple[50], shape: BoxShape.circle),
-              child: IconButton(
-                icon: const Icon(Icons.bar_chart_rounded, color: Colors.deepPurple),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const TestPage()),
-                  );
-                },
+            const Text(
+              "Good Morning,",
+              style: TextStyle(color: Colors.grey, fontSize: 14),
+            ),
+            Text(
+              displayName,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
               ),
             ),
-            Container(
-              decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
-              child: IconButton(
-                icon: const Icon(Icons.notifications_none, color: Colors.black),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const NotificationsPage()),
-                  );
-                },
-              ),
+          ],
+        ),
+        const Spacer(),
+        Row(
+          children: [
+            _headerCircleButton(
+              icon: Icons.bar_chart_rounded,
+              color: Colors.deepPurple,
+              bgColor: Colors.deepPurple[50]!,
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TestPage())),
+            ),
+            const SizedBox(width: 8),
+            _headerCircleButton(
+              icon: Icons.notifications_none,
+              color: Colors.black,
+              bgColor: Colors.grey[100]!,
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsPage())),
             ),
           ],
         ),
@@ -247,20 +276,21 @@ String _getRecommendationTitle(String mood) {
     );
   }
 
+  Widget _headerCircleButton({required IconData icon, required Color color, required Color bgColor, required VoidCallback onPressed}) {
+    return Container(
+      decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
+      child: IconButton(icon: Icon(icon, color: color), onPressed: onPressed),
+    );
+  }
+
   Widget _buildSectionHeader(String title) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
+        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         TextButton(
           onPressed: () {},
-          child: const Text(
-            "See all",
-            style: TextStyle(color: Colors.deepPurple),
-          ),
+          child: const Text("See all", style: TextStyle(color: Colors.deepPurple)),
         ),
       ],
     );
@@ -280,10 +310,7 @@ String _getRecommendationTitle(String mood) {
       children: moods.map((mood) {
         final bool isSelected = currentMood == mood['label'];
         return GestureDetector(
-          onTap: () {
-            // WE ONLY SELECT THE MOOD, NO REDIRECTION HERE
-            context.read<MoodBloc>().add(SelectMood(mood['label']));
-          },
+          onTap: () => context.read<MoodBloc>().add(SelectMood(mood['label'])),
           child: _moodItem(mood['icon'], mood['label'], isSelected),
         );
       }).toList(),
@@ -300,10 +327,7 @@ String _getRecommendationTitle(String mood) {
             color: isSelected ? Colors.deepPurple : Colors.grey[100],
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Icon(
-            icon,
-            color: isSelected ? Colors.white : Colors.grey[600],
-          ),
+          child: Icon(icon, color: isSelected ? Colors.white : Colors.grey[600]),
         ),
         const SizedBox(height: 8),
         Text(

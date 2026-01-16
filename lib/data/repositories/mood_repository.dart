@@ -3,19 +3,22 @@ import 'package:intl/intl.dart';
 
 class MoodRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final String userId = "user_123"; // Replace with your actual Auth logic later
+  final String userId = "user_123";
 
-  // 1. Save the mood for a specific day
   Future<void> saveMood(String moodLabel) async {
     final String todayDocId = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    await _firestore.collection('users').doc(userId).collection('moods').doc(todayDocId).set({
-      'label': moodLabel,
-      'date': todayDocId,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('moods')
+        .doc(todayDocId)
+        .set({
+          'label': moodLabel,
+          'date': todayDocId,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
   }
 
-  // 2. Fetch the label for a specific day (to keep selection on app restart)
   Future<String?> getMoodForDate(String dateId) async {
     final doc = await _firestore
         .collection('users')
@@ -30,33 +33,33 @@ class MoodRepository {
     return null;
   }
 
-  // 3. Fetch all recorded dates to calculate the streak
   Future<List<String>> getMoodHistory() async {
     final snapshot = await _firestore
         .collection('users')
         .doc(userId)
         .collection('moods')
         .get();
-    
-    // Returns a list of strings like ["2026-01-13", "2026-01-12"]
+
     return snapshot.docs.map((doc) => doc['date'] as String).toList();
   }
 
-  Future<Map<String, String>> getMoodLabelsForRange(List<String> dateIds) async {
-  Map<String, String> results = {};
-  
-  for (String dateId in dateIds) {
-    final doc = await _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('moods')
-        .doc(dateId)
-        .get();
-        
-    if (doc.exists) {
-      results[dateId] = doc.data()?['label'] as String;
+  Future<Map<String, String>> getMoodLabelsForRange(
+    List<String> dateIds,
+  ) async {
+    Map<String, String> results = {};
+
+    for (String dateId in dateIds) {
+      final doc = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('moods')
+          .doc(dateId)
+          .get();
+
+      if (doc.exists) {
+        results[dateId] = doc.data()?['label'] as String;
+      }
     }
+    return results;
   }
-  return results; 
-}
 }

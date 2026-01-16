@@ -7,9 +7,10 @@ class MoodChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Préparation sécurisée des données (7 jours par défaut)
-    List<double> chartData = scores.isNotEmpty ? List.from(scores) : [3, 2, 4, 1, 3, 5, 2];
-    
+    List<double> chartData = scores.isNotEmpty
+        ? List.from(scores)
+        : [3, 2, 4, 1, 3, 5, 2];
+
     while (chartData.length < 7) {
       chartData.add(0.0);
     }
@@ -27,7 +28,6 @@ class MoodChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // --- EN-TÊTE DU GRAPHIQUE ---
           Text(
             "Last 7 Days",
             style: textTheme.bodySmall?.copyWith(
@@ -62,8 +62,6 @@ class MoodChart extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 30),
-
-          // --- LE GRAPHIQUE ---
           SizedBox(
             height: 180,
             child: LineChart(
@@ -79,9 +77,15 @@ class MoodChart extends StatelessWidget {
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
                   bottomTitles: AxisTitles(sideTitles: _bottomTitles),
-                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  leftTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                 ),
                 minY: 0,
                 maxY: 6,
@@ -90,7 +94,7 @@ class MoodChart extends StatelessWidget {
                     spots: chartData.asMap().entries.map((e) {
                       return FlSpot(e.key.toDouble(), e.value);
                     }).toList(),
-                    isCurved: true, // Courbe de Bézier lisse
+                    isCurved: true,
                     curveSmoothness: 0.35,
                     color: colorScheme.primary,
                     barWidth: 4,
@@ -99,11 +103,11 @@ class MoodChart extends StatelessWidget {
                       show: true,
                       getDotPainter: (spot, percent, barData, index) =>
                           FlDotCirclePainter(
-                        radius: 4,
-                        color: Theme.of(context).cardColor,
-                        strokeWidth: 2,
-                        strokeColor: colorScheme.primary,
-                      ),
+                            radius: 4,
+                            color: Theme.of(context).cardColor,
+                            strokeWidth: 2,
+                            strokeColor: colorScheme.primary,
+                          ),
                     ),
                     belowBarData: BarAreaData(
                       show: true,

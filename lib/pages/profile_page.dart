@@ -9,7 +9,6 @@ import '../config/theme_mode_manager.dart';
 
 class ProfilePage extends StatefulWidget {
   final AuthService authService;
-
   const ProfilePage({super.key, required this.authService});
 
   @override

@@ -6,10 +6,7 @@ class DailyReflectionRemoteDataSource {
 
   DailyReflectionRemoteDataSource(this.firestore);
 
-  Future<void> saveReflection({
-    required Mood mood,
-    required String text,
-  }) {
+  Future<void> saveReflection({required Mood mood, required String text}) {
     return firestore.collection('daily_reflections').add({
       'mood': mood.name,
       'text': text,

@@ -2,23 +2,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
-
-// BLoCs
 import '../bloc/mood_bloc.dart';
-
-// Services & Models
 import '../auth/services/auth_service.dart';
-
-// Widgets
 import '../widgets/streak_card.dart';
 import '../widgets/recommendation_tile.dart';
-
-// Pages & Navigation
 import '../config/api_keys.dart';
 import 'notifications_page.dart';
 import 'main_navigation_page.dart';
 import 'statistics_page.dart';
-import 'daily_reflection_page.dart';
 
 class MyHomePage extends StatefulWidget {
   final AuthService authService;
@@ -29,60 +20,79 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  
-  // --- HELPERS: MOOD MAPPING LOGIC ---
-
   String _getLibraryCategoryForMood(String mood) {
     switch (mood) {
-      case 'Great': return 'Chill';
-      case 'Good': return 'Focus';
-      case 'Okay': return 'Meditation';
-      case 'Sad': return 'Anxiety';
-      case 'Awful': return 'Sleep';
-      default: return 'All';
+      case 'Great':
+        return 'Chill';
+      case 'Good':
+        return 'Focus';
+      case 'Okay':
+        return 'Meditation';
+      case 'Sad':
+        return 'Anxiety';
+      case 'Awful':
+        return 'Sleep';
+      default:
+        return 'All';
     }
   }
 
   String _getQueryForMood(String mood) {
     switch (mood) {
-      case 'Great': return 'chill lofi relax';
-      case 'Good': return 'concentration study focus';
-      case 'Okay': return 'meditation zen mindfulness';
-      case 'Sad': return 'calm peaceful stress relief';
-      case 'Awful': return 'sleep relaxing ambient';
-      default: return 'relaxing';
+      case 'Great':
+        return 'chill lofi relax';
+      case 'Good':
+        return 'concentration study focus';
+      case 'Okay':
+        return 'meditation zen mindfulness';
+      case 'Sad':
+        return 'calm peaceful stress relief';
+      case 'Awful':
+        return 'sleep relaxing ambient';
+      default:
+        return 'relaxing';
     }
   }
 
   int _getDurationForMood(String mood) {
     switch (mood) {
-      case 'Great': return 5;
-      case 'Good': return 10;
-      case 'Okay': return 15;
-      case 'Sad': return 20;
-      case 'Awful': return 30;
-      default: return 10;
+      case 'Great':
+        return 5;
+      case 'Good':
+        return 10;
+      case 'Okay':
+        return 15;
+      case 'Sad':
+        return 20;
+      case 'Awful':
+        return 30;
+      default:
+        return 10;
     }
   }
 
   String _getMeditationTitle(String mood) {
     int minutes = _getDurationForMood(mood);
     switch (mood) {
-      case 'Great': return "$minutes-Min Joy Anchor";
-      case 'Good': return "$minutes-Min Daily Balance";
-      case 'Okay': return "$minutes-Min Mindful Reset";
-      case 'Sad': return "$minutes-Min Deep Calm";
-      case 'Awful': return "$minutes-Min Stress Relief";
-      default: return "$minutes-Min Meditation";
+      case 'Great':
+        return "$minutes-Min Joy Anchor";
+      case 'Good':
+        return "$minutes-Min Daily Balance";
+      case 'Okay':
+        return "$minutes-Min Mindful Reset";
+      case 'Sad':
+        return "$minutes-Min Deep Calm";
+      case 'Awful':
+        return "$minutes-Min Stress Relief";
+      default:
+        return "$minutes-Min Meditation";
     }
   }
-
-  // --- API CALL FOR MUSIC ---
 
   Future<Map<String, dynamic>?> _fetchMoodMusic(String mood) async {
     final query = _getQueryForMood(mood);
     final url = Uri.parse(
-      'https://freesound.org/apiv2/search/text/?query=$query&fields=name&token=${ApiKeys.freesoundApiKey}&page_size=1'
+      'https://freesound.org/apiv2/search/text/?query=$query&fields=name&token=${ApiKeys.freesoundApiKey}&page_size=1',
     );
 
     try {
@@ -151,9 +161,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   _buildSectionHeader("Today's Recommendations"),
                   const SizedBox(height: 15),
 
-                  // --- DYNAMIC RECOMMENDATIONS ---
                   if (state.todayMood != null) ...[
-                    // 1. Meditation Recommendation based on Mood Timer
                     RecommendationTile(
                       icon: Icons.self_improvement,
                       title: _getMeditationTitle(state.todayMood!),
@@ -162,16 +170,17 @@ class _MyHomePageState extends State<MyHomePage> {
                       onTap: () {
                         MainNavigationPage.of(context)?.changeTab(
                           2,
-                          suggestedMinutes: _getDurationForMood(state.todayMood!),
+                          suggestedMinutes: _getDurationForMood(
+                            state.todayMood!,
+                          ),
                         );
                       },
                     ),
-
-                    // 2. Music Recommendation based on API fetch
                     FutureBuilder<Map<String, dynamic>?>(
                       future: _fetchMoodMusic(state.todayMood!),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return const Padding(
                             padding: EdgeInsets.symmetric(vertical: 10),
                             child: LinearProgressIndicator(),
@@ -184,11 +193,12 @@ class _MyHomePageState extends State<MyHomePage> {
                             subtitle: snapshot.data!['name'] ?? "Tap to listen",
                             backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.9),
                             onTap: () {
-                              final category = _getLibraryCategoryForMood(state.todayMood!);
-                              MainNavigationPage.of(context)?.changeTab(
-                                1,
-                                libraryCategory: category,
+                              final category = _getLibraryCategoryForMood(
+                                state.todayMood!,
                               );
+                              MainNavigationPage.of(
+                                context,
+                              )?.changeTab(1, libraryCategory: category);
                             },
                           );
                         }
@@ -197,7 +207,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ],
 
-                  
                   const SizedBox(height: 20),
                 ],
               ),
@@ -253,10 +262,18 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _headerCircleButton({required IconData icon, required Color color, required Color bgColor, required VoidCallback onPressed}) {
+  Widget _headerCircleButton({
+    required IconData icon,
+    required Color color,
+    required Color bgColor,
+    required VoidCallback onPressed,
+  }) {
     return Container(
       decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
-      child: IconButton(icon: Icon(icon, color: color), onPressed: onPressed),
+      child: IconButton(
+        icon: Icon(icon, color: color),
+        onPressed: onPressed,
+      ),
     );
   }
 
@@ -267,8 +284,15 @@ class _MyHomePageState extends State<MyHomePage> {
         Text(
           title,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        TextButton(
+          onPressed: () {},
+          child: const Text(
+            "See all",
+            style: TextStyle(color: Colors.deepPurple),
+          ),
         ),
       ],
     );

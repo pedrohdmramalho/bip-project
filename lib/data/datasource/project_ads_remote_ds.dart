@@ -10,5 +10,3 @@ class ProjectAdsRemoteDataSource {
     await firestore.collection('project_ads').doc(ad.id).set(ad.toMap());
   }
 }
-
-// Aqui que criamos a coleção

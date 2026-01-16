@@ -3,33 +3,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
-
-// Services & Auth
 import 'auth/services/auth_service.dart';
 import 'auth/screens/google_login_screen.dart';
 import 'data/models/user_model.dart';
-
-// Repositories
 import 'data/repositories/mood_repository.dart';
 import 'data/repositories/meditation_repository.dart';
-
-// BLoC
 import 'bloc/mood_bloc.dart';
-
-// Pages
 import 'pages/main_navigation_page.dart';
 import 'pages/meditation_page.dart';
 import 'services/notification_service.dart';
-
-// Config
 import 'config/theme_mode_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   final authService = FirebaseAuthService();
   final meditationRepo = MeditationRepository();
@@ -48,8 +35,8 @@ class MyApp extends StatelessWidget {
   final MeditationRepository meditationRepo;
 
   const MyApp({
-    super.key, 
-    required this.authService, 
+    super.key,
+    required this.authService,
     required this.meditationRepo,
   });
 
@@ -116,7 +103,7 @@ class AuthGate extends StatelessWidget {
         if (snapshot.hasData) {
           return MainNavigationPage(authService: authService);
         }
-        
+
         return GoogleLoginScreen(authService: authService);
       },
     );

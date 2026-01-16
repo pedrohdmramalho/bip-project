@@ -17,8 +17,10 @@ class MeditationExercise {
     required this.imageUrl,
   });
 
-  // Convertit un document Firestore en objet MeditationExercise
-  factory MeditationExercise.fromFirestore(Map<String, dynamic> data, String id) {
+  factory MeditationExercise.fromFirestore(
+    Map<String, dynamic> data,
+    String id,
+  ) {
     return MeditationExercise(
       id: id,
       title: data['title'] ?? '',
@@ -30,7 +32,6 @@ class MeditationExercise {
     );
   }
 
-  // Pour envoyer des données vers Firestore (si besoin d'ajouter des exercices)
   Map<String, dynamic> toFirestore() {
     return {
       'title': title,

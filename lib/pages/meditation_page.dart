@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ui' as ui;
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import '../config/api_keys.dart';
-import 'main_navigation_page.dart';
 import '../data/repositories/meditation_repository.dart';
 
 class SmoothBreathCurve extends Curve {
@@ -50,11 +48,7 @@ class BreathingFlowerPainter extends CustomPainter {
         )!
         ..style = PaintingStyle.fill;
 
-      canvas.drawCircle(
-        Offset(petalX, petalY),
-        petalRadius,
-        paint,
-      );
+      canvas.drawCircle(Offset(petalX, petalY), petalRadius, paint);
     }
 
     final centerPaint = Paint()
@@ -87,10 +81,10 @@ class _MeditationPageState extends State<MeditationPage>
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   late int _selectedMinutes;
-  
+
   final AudioPlayer _audioPlayer = AudioPlayer();
   final MeditationRepository _meditationRepository = MeditationRepository();
-  
+
   bool _isSessionActive = false;
   bool _isPaused = false;
   Duration _sessionDuration = Duration.zero;
@@ -120,12 +114,12 @@ class _MeditationPageState extends State<MeditationPage>
   Future<void> _endSession() async {
     await _audioPlayer.stop();
     _sessionTimer?.cancel();
-    
+
     final String formattedDuration = _formatDuration(_elapsedTime);
     final String sessionTitle = _currentMusic?['title'] ?? 'General Meditation';
-    
+
     await _meditationRepository.saveCompletedSession(
-      userId: "user_123", 
+      userId: "user_123",
       title: sessionTitle,
       duration: formattedDuration,
     );
@@ -161,7 +155,7 @@ class _MeditationPageState extends State<MeditationPage>
     _selectedMinutes = widget.suggestedMinutes ?? 25;
     _breathingController = AnimationController(
       duration: const Duration(seconds: 10),
-      
+
       vsync: this,
     )..repeat(reverse: true);
 
@@ -223,16 +217,17 @@ class _MeditationPageState extends State<MeditationPage>
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("Meditation", style: TextStyle(fontWeight: FontWeight.w600)),
+        title: const Text(
+          "Meditation",
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
         automaticallyImplyLeading: false,
         centerTitle: true,
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 2,
         foregroundColor: isDarkMode ? Colors.white : Colors.black,
       ),
-      body: _isSessionActive
-          ? _buildSessionUI()
-          : _buildSetupUI(),
+      body: _isSessionActive ? _buildSessionUI() : _buildSetupUI(),
     );
   }
 
@@ -256,18 +251,12 @@ class _MeditationPageState extends State<MeditationPage>
             ),
 
             const SizedBox(height: 50),
-
-            // Time selector card
             _buildTimeSelectorCard(),
 
             const SizedBox(height: 40),
-
-            // Music selector card
             _buildMusicSelectorCard(),
 
             const SizedBox(height: 40),
-
-            // Start button
             _buildStartButton(),
 
             const SizedBox(height: 24),
@@ -336,10 +325,7 @@ class _MeditationPageState extends State<MeditationPage>
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
-                            '🧘',
-                            style: TextStyle(fontSize: 70),
-                          ),
+                          const Text('🧘', style: TextStyle(fontSize: 70)),
                         ],
                       ),
                     ),
@@ -349,8 +335,6 @@ class _MeditationPageState extends State<MeditationPage>
             ),
 
             const SizedBox(height: 24),
-
-            // Breathing text
             AnimatedOpacity(
               opacity: _breathingAnimation.value < 0.5 ? 1.0 : 0.6,
               duration: const Duration(milliseconds: 500),
@@ -587,9 +571,7 @@ class _MeditationPageState extends State<MeditationPage>
                 _showMusicSelector ? Icons.expand_less : Icons.expand_more,
               ),
               label: Text(
-                _showMusicSelector
-                    ? 'Hide Library'
-                    : 'Choose from Library',
+                _showMusicSelector ? 'Hide Library' : 'Choose from Library',
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.deepPurple,
@@ -649,8 +631,7 @@ class _MeditationPageState extends State<MeditationPage>
                                       width: 40,
                                       height: 40,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) =>
-                                          Container(
+                                      errorBuilder: (_, __, ___) => Container(
                                         width: 40,
                                         height: 40,
                                         color: Theme.of(context).colorScheme.surfaceVariant,
@@ -698,16 +679,18 @@ class _MeditationPageState extends State<MeditationPage>
                                         )
                                       : IconButton(
                                           icon: Icon(
-                                            _previewPlayingId == music['id'] && _isPreviewPlaying
+                                            _previewPlayingId == music['id'] &&
+                                                    _isPreviewPlaying
                                                 ? Icons.pause_circle
                                                 : Icons.play_circle_outline,
                                             color: Colors.deepPurple,
                                             size: 20,
                                           ),
-                                          onPressed: () => _togglePreviewPlayback(
-                                            music['id'] ?? '',
-                                            music['audioPath'] ?? '',
-                                          ),
+                                          onPressed: () =>
+                                              _togglePreviewPlayback(
+                                                music['id'] ?? '',
+                                                music['audioPath'] ?? '',
+                                              ),
                                           constraints: const BoxConstraints(
                                             minWidth: 32,
                                             minHeight: 32,
@@ -754,11 +737,7 @@ class _MeditationPageState extends State<MeditationPage>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.play_arrow,
-                  color: Colors.white,
-                  size: 24,
-                ),
+                const Icon(Icons.play_arrow, color: Colors.white, size: 24),
                 const SizedBox(width: 12),
                 const Text(
                   'Start Meditation',
@@ -786,7 +765,10 @@ class _MeditationPageState extends State<MeditationPage>
         Expanded(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 32.0,
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -798,9 +780,13 @@ class _MeditationPageState extends State<MeditationPage>
                       alignment: Alignment.center,
                       children: [
                         AnimatedBuilder(
-                          animation: Listenable.merge([_breathingAnimation, _pulseAnimation]),
+                          animation: Listenable.merge([
+                            _breathingAnimation,
+                            _pulseAnimation,
+                          ]),
                           builder: (context, child) {
-                            final breatheScale = 0.6 + (_breathingAnimation.value * 0.4);
+                            final breatheScale =
+                                0.6 + (_breathingAnimation.value * 0.4);
                             return Transform.scale(
                               scale: breatheScale,
                               child: CustomPaint(
@@ -842,7 +828,10 @@ class _MeditationPageState extends State<MeditationPage>
                   const SizedBox(height: 40),
 
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
@@ -1119,37 +1108,49 @@ class _MeditationPageState extends State<MeditationPage>
 
     try {
       final storedExercises = await _meditationRepository.fetchExercises();
-      
-      if (storedExercises.isNotEmpty) {
-        allTracks = storedExercises.map((e) => {
-          'id': e.id,
-          'title': e.title,
-          'duration': e.durationInMinutes.toString(),
-          'imageUrl': e.imageUrl,
-          'audioPath': e.audioUrl,
-        }).toList();
-      } else {
 
+      if (storedExercises.isNotEmpty) {
+        allTracks = storedExercises
+            .map(
+              (e) => {
+                'id': e.id,
+                'title': e.title,
+                'duration': e.durationInMinutes.toString(),
+                'imageUrl': e.imageUrl,
+                'audioPath': e.audioUrl,
+              },
+            )
+            .toList();
+      } else {
         final url = Uri.parse(
-          'https://freesound.org/apiv2/search/text/?query=meditation zen mindfulness&fields=id,name,previews,duration&token=${ApiKeys.freesoundApiKey}&page_size=15'
+          'https://freesound.org/apiv2/search/text/?query=meditation zen mindfulness&fields=id,name,previews,duration&token=${ApiKeys.freesoundApiKey}&page_size=15',
         );
-        
+
         final response = await http.get(url);
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           final List results = data['results'] ?? [];
-          
-          allTracks = results.asMap().entries.map((entry) {
-            final index = entry.key;
-            final item = entry.value;
-            return {
-              'id': 'med_${item['id']}',
-              'title': item['name'] ?? 'Untitled',
-              'duration': (item['duration'] ?? 0).toStringAsFixed(0),
-              'imageUrl': 'https://picsum.photos/seed/${500 + index}/400/200',
-              'audioPath': item['previews']?['preview-hq-mp3'] ?? item['previews']?['preview-lq-mp3'] ?? '',
-            };
-          }).where((track) => track['audioPath'].toString().isNotEmpty).toList();
+
+          allTracks = results
+              .asMap()
+              .entries
+              .map((entry) {
+                final index = entry.key;
+                final item = entry.value;
+                return {
+                  'id': 'med_${item['id']}',
+                  'title': item['name'] ?? 'Untitled',
+                  'duration': (item['duration'] ?? 0).toStringAsFixed(0),
+                  'imageUrl':
+                      'https://picsum.photos/seed/${500 + index}/400/200',
+                  'audioPath':
+                      item['previews']?['preview-hq-mp3'] ??
+                      item['previews']?['preview-lq-mp3'] ??
+                      '',
+                };
+              })
+              .where((track) => track['audioPath'].toString().isNotEmpty)
+              .toList();
         }
       }
     } catch (e) {
@@ -1159,12 +1160,16 @@ class _MeditationPageState extends State<MeditationPage>
 
     if (!mounted) return;
     setState(() {
-      _meditationMusicList = allTracks.isNotEmpty ? allTracks : _getExampleMeditationTracks();
+      _meditationMusicList = allTracks.isNotEmpty
+          ? allTracks
+          : _getExampleMeditationTracks();
       _isMusicLoading = false;
     });
-    
+
     setState(() {
-      _meditationMusicList = allTracks.isNotEmpty ? allTracks : _getExampleMeditationTracks();
+      _meditationMusicList = allTracks.isNotEmpty
+          ? allTracks
+          : _getExampleMeditationTracks();
       _isMusicLoading = false;
     });
   }
@@ -1176,28 +1181,33 @@ class _MeditationPageState extends State<MeditationPage>
         'title': 'Peaceful Morning',
         'duration': '600',
         'imageUrl': 'https://picsum.photos/seed/501/400/200',
-        'audioPath': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+        'audioPath':
+            'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
       },
       {
         'id': 'med_example_2',
         'title': 'Zen Garden',
         'duration': '720',
         'imageUrl': 'https://picsum.photos/seed/502/400/200',
-        'audioPath': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+        'audioPath':
+            'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
       },
       {
         'id': 'med_example_3',
         'title': 'Ocean Waves',
         'duration': '540',
         'imageUrl': 'https://picsum.photos/seed/503/400/200',
-        'audioPath': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+        'audioPath':
+            'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
       },
     ];
   }
 
   void _selectRandomMusic() {
     if (_meditationMusicList.isEmpty) return;
-    final random = _meditationMusicList[DateTime.now().microsecond % _meditationMusicList.length];
+    final random =
+        _meditationMusicList[DateTime.now().microsecond %
+            _meditationMusicList.length];
     setState(() {
       _currentMusic = random;
     });
@@ -1215,8 +1225,8 @@ class _MeditationPageState extends State<MeditationPage>
       _elapsedTime = Duration.zero;
     });
 
-    // Start playing music
-    if (_currentMusic != null && _currentMusic!['audioPath'].toString().isNotEmpty) {
+    if (_currentMusic != null &&
+        _currentMusic!['audioPath'].toString().isNotEmpty) {
       try {
         await _audioPlayer.play(
           UrlSource(_currentMusic!['audioPath'] ?? ''),
@@ -1228,7 +1238,6 @@ class _MeditationPageState extends State<MeditationPage>
       }
     }
 
-    // Start session timer
     _sessionTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!_isPaused) {
         setState(() {
@@ -1254,7 +1263,6 @@ class _MeditationPageState extends State<MeditationPage>
     });
   }
 
-
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final minutes = twoDigits(duration.inMinutes.remainder(60));
@@ -1264,23 +1272,21 @@ class _MeditationPageState extends State<MeditationPage>
 
   @override
   void dispose() {
-    // Stop timers first
     _sessionTimer?.cancel();
-    
-    // Stop and dispose animation controllers
+
     if (_breathingController.isAnimating) {
       _breathingController.stop();
     }
     _breathingController.dispose();
-    
+
     if (_pulseController.isAnimating) {
       _pulseController.stop();
     }
     _pulseController.dispose();
-    
-    // Dispose audio player
+
     _audioPlayer.dispose();
     _sessionTimer?.cancel();
+
     super.dispose();
   }
 }

@@ -14,10 +14,13 @@ class MoodChart extends StatelessWidget {
       chartData.add(0.0);
     }
 
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9F7FF), // Fond clair du screen
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Column(
@@ -25,18 +28,19 @@ class MoodChart extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // --- EN-TÊTE DU GRAPHIQUE ---
-          const Text(
+          Text(
             "Last 7 Days",
-            style: TextStyle(color: Colors.grey, fontSize: 14),
+            style: textTheme.bodySmall?.copyWith(
+              color: textTheme.bodySmall?.color?.withOpacity(0.7),
+            ),
           ),
           const SizedBox(height: 4),
           Row(
             children: [
-              const Text(
+              Text(
                 "Stable",
-                style: TextStyle(
-                  color: Color(0xFF8B5CF6),
-                  fontSize: 28,
+                style: textTheme.headlineSmall?.copyWith(
+                  color: colorScheme.primary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -44,14 +48,13 @@ class MoodChart extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFDCFCE7),
+                  color: colorScheme.secondaryContainer.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text(
+                child: Text(
                   "+20%",
-                  style: TextStyle(
-                    color: Color(0xFF166534),
-                    fontSize: 12,
+                  style: textTheme.labelSmall?.copyWith(
+                    color: colorScheme.onSecondaryContainer,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -65,7 +68,14 @@ class MoodChart extends StatelessWidget {
             height: 180,
             child: LineChart(
               LineChartData(
-                gridData: const FlGridData(show: false),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: colorScheme.outline.withOpacity(0.15),
+                    strokeWidth: 1,
+                  ),
+                ),
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
                   bottomTitles: AxisTitles(sideTitles: _bottomTitles),
@@ -82,7 +92,7 @@ class MoodChart extends StatelessWidget {
                     }).toList(),
                     isCurved: true, // Courbe de Bézier lisse
                     curveSmoothness: 0.35,
-                    color: const Color(0xFF8B5CF6),
+                    color: colorScheme.primary,
                     barWidth: 4,
                     isStrokeCapRound: true,
                     dotData: FlDotData(
@@ -90,9 +100,9 @@ class MoodChart extends StatelessWidget {
                       getDotPainter: (spot, percent, barData, index) =>
                           FlDotCirclePainter(
                         radius: 4,
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                         strokeWidth: 2,
-                        strokeColor: const Color(0xFF8B5CF6),
+                        strokeColor: colorScheme.primary,
                       ),
                     ),
                     belowBarData: BarAreaData(
@@ -101,8 +111,8 @@ class MoodChart extends StatelessWidget {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          const Color(0xFF8B5CF6).withOpacity(0.2),
-                          const Color(0xFF8B5CF6).withOpacity(0.0),
+                          colorScheme.primary.withOpacity(0.18),
+                          colorScheme.primary.withOpacity(0.0),
                         ],
                       ),
                     ),
@@ -122,26 +132,25 @@ class MoodChart extends StatelessWidget {
         interval: 1,
         getTitlesWidget: (value, meta) {
           final index = value.toInt();
-          
-          // Tableau des jours pour la correspondance
           const dayNames = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-          
-          // Calcul de la date réelle pour ce point du graphique
-          // L'index 0 est J-6, l'index 6 est aujourd'hui (J-0)
           final date = DateTime.now().subtract(Duration(days: 6 - index));
-          
-          // date.weekday renvoie 1 pour Lundi, 7 pour Dimanche
           final String label = dayNames[date.weekday - 1];
 
           if (index >= 0 && index < 7) {
             return Padding(
               padding: const EdgeInsets.only(top: 10.0),
-              child: Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 12,
+              child: Builder(
+                builder: (context) => Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.color
+                            ?.withOpacity(0.7),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
+                      ),
                 ),
               ),
             );

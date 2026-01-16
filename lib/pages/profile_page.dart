@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:starteu/auth/services/auth_service.dart';
+import '../config/theme_mode_manager.dart';
 
 class ProfilePage extends StatefulWidget {
   final AuthService authService;
@@ -87,14 +89,15 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     final user = widget.authService.currentUser;
     final photoUrl = _firebaseUser?.photoURL;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text("Profile"),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
-        foregroundColor: Colors.black,
+        foregroundColor: isDarkMode ? Colors.white : Colors.black,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.red),
@@ -118,7 +121,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.deepPurple, width: 3),
-                      color: Colors.grey[200],
+                      color: Theme.of(context).colorScheme.surfaceVariant,
                       image: photoUrl != null
                           ? DecorationImage(
                               image: NetworkImage(photoUrl),
@@ -178,9 +181,81 @@ class _ProfilePageState extends State<ProfilePage> {
             _buildInfoTile(Icons.person, "Name", user?.displayName ?? "User"),
             const SizedBox(height: 16),
             _buildInfoTile(Icons.email, "Email", user?.email ?? "No Email"),
+            
+            const SizedBox(height: 30),
+            
+            // Theme Mode Selector
+            Text(
+              "Appearance",
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            Consumer<ThemeModeManager>(
+              builder: (context, themeModeManager, _) {
+                return Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildThemeTile(
+                        context,
+                        Icons.light_mode,
+                        'Light Mode',
+                        ThemeMode.light,
+                        themeModeManager,
+                      ),
+                      Divider(height: 1, color: Colors.grey[300]),
+                      _buildThemeTile(
+                        context,
+                        Icons.dark_mode,
+                        'Dark Mode',
+                        ThemeMode.dark,
+                        themeModeManager,
+                      ),
+                      Divider(height: 1, color: Colors.grey[300]),
+                      _buildThemeTile(
+                        context,
+                        Icons.brightness_auto,
+                        'System',
+                        ThemeMode.system,
+                        themeModeManager,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildThemeTile(
+    BuildContext context,
+    IconData icon,
+    String label,
+    ThemeMode mode,
+    ThemeModeManager themeModeManager,
+  ) {
+    final isSelected = themeModeManager.themeMode == mode;
+    
+    return ListTile(
+      leading: Icon(icon, color: Colors.deepPurple),
+      title: Text(label),
+      trailing: isSelected
+          ? const Icon(Icons.check, color: Colors.deepPurple)
+          : null,
+      onTap: () {
+        themeModeManager.setThemeMode(mode);
+      },
+      selected: isSelected,
+      selectedTileColor: Colors.deepPurple.withOpacity(0.1),
     );
   }
 
@@ -188,9 +263,9 @@ class _ProfilePageState extends State<ProfilePage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Row(
         children: [
@@ -202,14 +277,13 @@ class _ProfilePageState extends State<ProfilePage> {
               children: [
                 Text(
                   label,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  style: Theme.of(context).textTheme.labelMedium,
                 ),
                 Text(
                   value,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ],
             ),

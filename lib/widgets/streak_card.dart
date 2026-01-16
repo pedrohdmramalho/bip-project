@@ -12,6 +12,9 @@ class StreakCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return GestureDetector(
       onTap: () {
         // Logique de navigation vers les détails du streak ici
@@ -20,25 +23,30 @@ class StreakCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFFF3E5F5), // Mauve très clair
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Column(
           children: [
-            const Icon(Icons.local_fire_department, color: Colors.deepPurple, size: 40),
+            Icon(Icons.local_fire_department, color: colorScheme.primary, size: 40),
             Text(
               "$streakCount",
-              style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+              style: textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.primary,
+              ),
             ),
-            const Text(
+            Text(
               "Day Streak!",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            const Text(
+            Text(
               "You've checked in every day this week. Keep the momentum going.",
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black54, fontSize: 13),
+              style: textTheme.bodySmall?.copyWith(
+                color: textTheme.bodySmall?.color?.withOpacity(0.9),
+              ),
             ),
             const SizedBox(height: 15),
             ClipRRect(
@@ -46,8 +54,8 @@ class StreakCard extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 8,
-                backgroundColor: Colors.white,
-                color: Colors.deepPurple,
+                backgroundColor: colorScheme.surfaceVariant,
+                color: colorScheme.primary,
               ),
             ),
           ],

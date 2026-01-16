@@ -3,6 +3,7 @@ import 'package:starteu/auth/services/auth_service.dart';
 import 'my_homepage.dart';
 import 'library_page.dart';
 import 'meditation_page.dart';
+import 'profile_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
   final AuthService authService;
@@ -46,7 +47,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       case 2:
         return MeditationPage(selectedMusic: _selectedMusicForMeditation);
       case 3:
-        return const Center(child: Text('Profile'));
+        return ProfilePage(authService: widget.authService);
       default:
         return MyHomePage(authService: widget.authService);
     }

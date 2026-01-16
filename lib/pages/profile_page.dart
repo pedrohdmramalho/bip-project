@@ -49,12 +49,15 @@ class _ProfilePageState extends State<ProfilePage> {
           const SnackBar(content: Text('Profile picture updated!')),
         );
       }
-    } catch (e) {
+    } on FirebaseException catch (e) {
+      print("Firebase Storage Error: [${e.code}] ${e.message}");
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ).showSnackBar(SnackBar(content: Text('Upload failed: ${e.message}')));
       }
+    } catch (e) {
+      print("General Error: $e");
     } finally {
       setState(() => _isUploading = false);
     }
@@ -106,7 +109,6 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             const SizedBox(height: 20),
 
-            // --- PROFILE PICTURE SECTION ---
             Center(
               child: Stack(
                 children: [
@@ -173,12 +175,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
             const SizedBox(height: 30),
 
-            // --- USER INFO ---
             _buildInfoTile(Icons.person, "Name", user?.displayName ?? "User"),
             const SizedBox(height: 16),
             _buildInfoTile(Icons.email, "Email", user?.email ?? "No Email"),
-            const SizedBox(height: 16),
-            _buildInfoTile(Icons.perm_identity, "User ID", user?.uid ?? ""),
           ],
         ),
       ),

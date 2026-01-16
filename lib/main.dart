@@ -59,7 +59,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'Mental Health App',
+        title: 'Balance',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,

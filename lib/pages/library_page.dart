@@ -219,15 +219,16 @@ class _LibraryPageState extends State<LibraryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         automaticallyImplyLeading: false, // Désactive le bouton retour automatique
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         title: Text(
           widget.title,
-          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(color: isDarkMode ? Colors.white : Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: const [
           Padding(
@@ -284,7 +285,9 @@ class _LibraryPageState extends State<LibraryPage> {
                     },
                     selectedColor: Colors.deepPurple,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black,
+                      color: isSelected
+                          ? Colors.white
+                          : Theme.of(context).colorScheme.onSurface,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
@@ -322,7 +325,7 @@ class _LibraryPageState extends State<LibraryPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -345,7 +348,7 @@ class _LibraryPageState extends State<LibraryPage> {
               errorBuilder: (context, error, stackTrace) {
                 return Container(
                   height: 180,
-                  color: Colors.grey[300],
+                  color: Theme.of(context).colorScheme.surfaceVariant,
                   child: const Icon(Icons.music_note, size: 50),
                 );
               },
@@ -365,15 +368,17 @@ class _LibraryPageState extends State<LibraryPage> {
                         children: [
                           Text(
                             data['title'] ?? 'Bez tytułu',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             "${_formatDurationString(data['duration'])} • ${data['category'] ?? 'Relaxing'}",
-                            style: TextStyle(color: Colors.grey[600]),
+                            style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: Colors.grey[600]),
                           ),
                         ],
                       ),
@@ -383,9 +388,9 @@ class _LibraryPageState extends State<LibraryPage> {
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: isCurrentlyPlaying
+                            color: isCurrentlyPlaying
                               ? Colors.deepPurple
-                              : Colors.deepPurple[50],
+                              : Theme.of(context).colorScheme.surfaceVariant,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -432,7 +437,7 @@ class _LibraryPageState extends State<LibraryPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -457,7 +462,7 @@ class _LibraryPageState extends State<LibraryPage> {
                     return Container(
                       width: 50,
                       height: 50,
-                      color: Colors.grey[300],
+                      color: Theme.of(context).colorScheme.surfaceVariant,
                       child: const Icon(Icons.music_note),
                     );
                   },
@@ -470,14 +475,16 @@ class _LibraryPageState extends State<LibraryPage> {
                   children: [
                     Text(
                       currentMusic['title'] ?? '',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     Text(
                       currentMusic['category'] ?? '',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -513,11 +520,17 @@ class _LibraryPageState extends State<LibraryPage> {
               children: [
                 Text(
                   _formatDuration(_position),
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: Colors.grey[600]),
                 ),
                 Text(
                   _formatDuration(_duration),
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: Colors.grey[600]),
                 ),
               ],
             ),

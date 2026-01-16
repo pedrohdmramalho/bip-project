@@ -18,6 +18,9 @@ class RecommendationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
@@ -34,22 +37,31 @@ class RecommendationTile extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.5),
+                  color: colorScheme.onSurface.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: Colors.black87),
+                child: Icon(icon, color: colorScheme.primary),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                    Text(subtitle, style: const TextStyle(color: Colors.black54, fontSize: 13)),
+                    Text(
+                      title,
+                      style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      subtitle,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: textTheme.bodyMedium?.color?.withOpacity(0.9),
+                        height: 1.1,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const Icon(Icons.play_circle_fill, color: Colors.deepPurple, size: 36),
+              Icon(Icons.play_circle_fill, color: colorScheme.primary, size: 36),
             ],
           ),
         ),

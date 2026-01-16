@@ -219,15 +219,16 @@ class _MeditationPageState extends State<MeditationPage>
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text("Meditation", style: TextStyle(fontWeight: FontWeight.w600)),
         automaticallyImplyLeading: false,
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 2,
-        foregroundColor: Colors.black,
+        foregroundColor: isDarkMode ? Colors.white : Colors.black,
       ),
       body: _isSessionActive
           ? _buildSessionUI()
@@ -248,12 +249,10 @@ class _MeditationPageState extends State<MeditationPage>
             Text(
               _affirmations[DateTime.now().microsecond % _affirmations.length],
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
-                fontStyle: FontStyle.italic,
-              ),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontStyle: FontStyle.italic,
+                    color: Theme.of(context).textTheme.titleMedium?.color?.withOpacity(0.8),
+                  ),
             ),
 
             const SizedBox(height: 50),
@@ -376,7 +375,7 @@ class _MeditationPageState extends State<MeditationPage>
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -390,13 +389,11 @@ class _MeditationPageState extends State<MeditationPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Session Duration',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: 16),
           Wrap(
@@ -413,14 +410,14 @@ class _MeditationPageState extends State<MeditationPage>
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isSelected
+                        color: isSelected
                           ? Colors.deepPurple
-                          : Colors.grey[100],
+                          : Theme.of(context).colorScheme.surfaceVariant,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected
                             ? Colors.deepPurple
-                            : Colors.grey[300]!,
+                            : Theme.of(context).dividerColor,
                         width: 2,
                       ),
                     ),
@@ -433,7 +430,9 @@ class _MeditationPageState extends State<MeditationPage>
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: isSelected ? Colors.white : Colors.grey[700],
+                        color: isSelected
+                          ? Colors.white
+                          : Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -449,7 +448,7 @@ class _MeditationPageState extends State<MeditationPage>
   Widget _buildMusicSelectorCard() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -463,13 +462,11 @@ class _MeditationPageState extends State<MeditationPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Background Music',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: 16),
 
@@ -502,7 +499,7 @@ class _MeditationPageState extends State<MeditationPage>
                         width: 56,
                         height: 56,
                         decoration: BoxDecoration(
-                          color: Colors.grey[200],
+                          color: Theme.of(context).colorScheme.surfaceVariant,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(Icons.music_note),
@@ -529,10 +526,16 @@ class _MeditationPageState extends State<MeditationPage>
                               _currentMusic!['duration'].toString(),
                             ) ?? 0,
                           )),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
+                            style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
+                              color: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.color
+                                ?.withOpacity(0.7),
+                              ),
                         ),
                       ],
                     ),
@@ -540,7 +543,7 @@ class _MeditationPageState extends State<MeditationPage>
                   IconButton(
                     icon: Icon(
                       Icons.close,
-                      color: Colors.grey[600],
+                      color: Theme.of(context).iconTheme.color?.withOpacity(0.7),
                       size: 20,
                     ),
                     onPressed: () {
@@ -559,10 +562,16 @@ class _MeditationPageState extends State<MeditationPage>
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Text(
                 'No music selected',
-                style: TextStyle(
-                  color: Colors.grey[500],
-                  fontSize: 14,
-                ),
+                style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(
+                    color: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.color
+                      ?.withOpacity(0.6),
+                  ),
               ),
             ),
 
@@ -644,7 +653,7 @@ class _MeditationPageState extends State<MeditationPage>
                                           Container(
                                         width: 40,
                                         height: 40,
-                                        color: Colors.grey[300],
+                                        color: Theme.of(context).colorScheme.surfaceVariant,
                                         child: const Icon(
                                           Icons.music_note,
                                           size: 20,
@@ -654,15 +663,15 @@ class _MeditationPageState extends State<MeditationPage>
                                   ),
                                   title: Text(
                                     music['title'] ?? 'Unknown',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: isSelected
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        fontSize: 13,
+                                        fontWeight: isSelected
                                           ? FontWeight.w600
                                           : FontWeight.w500,
-                                      color: isSelected
+                                        color: isSelected
                                           ? Colors.deepPurple
-                                          : Colors.black87,
-                                    ),
+                                          : Theme.of(context).colorScheme.onSurface,
+                                      ),
                                   ),
                                   subtitle: Text(
                                     _formatDuration(Duration(
@@ -670,10 +679,16 @@ class _MeditationPageState extends State<MeditationPage>
                                         music['duration'].toString(),
                                       ) ?? 0,
                                     )),
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.grey[600],
-                                    ),
+                                    style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.color
+                                          ?.withOpacity(0.7),
+                                      ),
                                   ),
                                   trailing: isSelected
                                       ? const Icon(
@@ -807,22 +822,19 @@ class _MeditationPageState extends State<MeditationPage>
                     children: [
                       Text(
                         _formatDuration(timeRemaining),
-                        style: const TextStyle(
-                          fontSize: 56,
-                          fontWeight: FontWeight.w300,
-                          color: Colors.black87,
-                          letterSpacing: 1,
-                        ),
+                        style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                              fontWeight: FontWeight.w300,
+                              letterSpacing: 1,
+                            ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         _isPaused ? 'PAUSED' : 'BREATHING',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                          letterSpacing: 1.5,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              letterSpacing: 1.5,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                            ),
                       ),
                     ],
                   ),
@@ -832,7 +844,7 @@ class _MeditationPageState extends State<MeditationPage>
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
@@ -863,18 +875,15 @@ class _MeditationPageState extends State<MeditationPage>
                           children: [
                             Text(
                               '${_sessionDuration.inMinutes}',
-                              style: const TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
+                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                             Text(
                               'minutes',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                                  ),
                             ),
                           ],
                         ),
@@ -899,7 +908,7 @@ class _MeditationPageState extends State<MeditationPage>
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
@@ -916,19 +925,16 @@ class _MeditationPageState extends State<MeditationPage>
                           children: [
                             Text(
                               'Session Progress',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey[700],
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                             Text(
                               '${(progressValue * 100).toStringAsFixed(0)}%',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.deepPurple,
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.deepPurple,
+                                  ),
                             ),
                           ],
                         ),
@@ -938,7 +944,7 @@ class _MeditationPageState extends State<MeditationPage>
                           child: LinearProgressIndicator(
                             value: progressValue,
                             minHeight: 8,
-                            backgroundColor: Colors.grey[200],
+                            backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
                             valueColor: const AlwaysStoppedAnimation<Color>(
                               Colors.deepPurple,
                             ),
@@ -954,7 +960,7 @@ class _MeditationPageState extends State<MeditationPage>
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
@@ -981,12 +987,12 @@ class _MeditationPageState extends State<MeditationPage>
                                 width: 56,
                                 height: 56,
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[200],
+                                  color: Theme.of(context).colorScheme.surfaceVariant,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Icon(
                                   Icons.music_note,
-                                  color: Colors.grey[600],
+                                  color: Theme.of(context).iconTheme.color?.withOpacity(0.7),
                                 ),
                               ),
                             ),
@@ -998,20 +1004,17 @@ class _MeditationPageState extends State<MeditationPage>
                               children: [
                                 Text(
                                   'Now Playing',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey[600],
-                                    letterSpacing: 0.5,
-                                  ),
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        letterSpacing: 0.5,
+                                        color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                                      ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   _currentMusic!['title'] ?? 'Unknown',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                    color: Colors.black87,
-                                  ),
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -1030,10 +1033,10 @@ class _MeditationPageState extends State<MeditationPage>
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: const Color(0xFFFAFAFA),
+            color: Theme.of(context).cardColor,
             border: Border(
               top: BorderSide(
-                color: Colors.grey[200]!,
+                color: Theme.of(context).dividerColor,
                 width: 1,
               ),
             ),
@@ -1261,12 +1264,23 @@ class _MeditationPageState extends State<MeditationPage>
 
   @override
   void dispose() {
-    _breathingController.dispose();
-    _pulseController.dispose(); 
-  
-    _audioPlayer.dispose();
+    // Stop timers first
     _sessionTimer?.cancel();
     
+    // Stop and dispose animation controllers
+    if (_breathingController.isAnimating) {
+      _breathingController.stop();
+    }
+    _breathingController.dispose();
+    
+    if (_pulseController.isAnimating) {
+      _pulseController.stop();
+    }
+    _pulseController.dispose();
+    
+    // Dispose audio player
+    _audioPlayer.dispose();
+    _sessionTimer?.cancel();
     super.dispose();
   }
 }

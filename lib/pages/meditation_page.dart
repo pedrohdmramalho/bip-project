@@ -15,7 +15,7 @@ class SmoothBreathCurve extends Curve {
   double transformInternal(double t) {
     return _smoothstep(t);
   }
-  
+
   double _smoothstep(double t) {
     return t * t * (3.0 - 2.0 * t);
   }
@@ -30,17 +30,17 @@ class BreathingFlowerPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final baseRadius = size.width * 0.3;
-    
+
     const numPetals = 5;
     for (int i = 0; i < numPetals; i++) {
       final angle = (2 * pi * i) / numPetals - pi / 2;
-      
+
       final petalScale = 0.7 + (progress * 0.3);
       final petalRadius = baseRadius * petalScale;
-      
+
       final petalX = center.dx + cos(angle) * baseRadius * 0.6;
       final petalY = center.dy + sin(angle) * baseRadius * 0.6;
-      
+
       final paint = Paint()
         ..color = Color.lerp(
           const Color(0xFF7C3AED).withOpacity(0.4),
@@ -48,18 +48,18 @@ class BreathingFlowerPainter extends CustomPainter {
           progress,
         )!
         ..style = PaintingStyle.fill;
-      
+
       canvas.drawCircle(
         Offset(petalX, petalY),
         petalRadius,
         paint,
       );
     }
-    
+
     final centerPaint = Paint()
       ..color = const Color(0xFF7C3AED)
       ..style = PaintingStyle.fill;
-    
+
     canvas.drawCircle(center, baseRadius * 0.3, centerPaint);
   }
 
@@ -89,26 +89,26 @@ class _MeditationPageState extends State<MeditationPage>
   late Animation<double> _breathingAnimation;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  
+
   final AudioPlayer _audioPlayer = AudioPlayer();
-  
+
   int _selectedMinutes = 25;
   bool _isSessionActive = false;
   bool _isPaused = false;
   Duration _sessionDuration = Duration.zero;
   Duration _elapsedTime = Duration.zero;
   Timer? _sessionTimer;
-  
+
   Map<String, dynamic>? _currentMusic;
   bool _isPlayingMusic = false;
   Duration _musicPosition = Duration.zero;
   Duration _musicDuration = Duration.zero;
-  
+
   bool _showMusicSelector = false;
   List<Map<String, dynamic>> _meditationMusicList = [];
   bool _isMusicLoading = false;
-  
-  String? _previewPlayingId; 
+
+  String? _previewPlayingId;
   bool _isPreviewPlaying = false;
 
   final List<String> _affirmations = [
@@ -126,7 +126,7 @@ class _MeditationPageState extends State<MeditationPage>
       duration: const Duration(seconds: 10),
       vsync: this,
     )..repeat(reverse: true);
-    
+
     _breathingAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _breathingController,
@@ -140,14 +140,14 @@ class _MeditationPageState extends State<MeditationPage>
     _pulseAnimation = Tween<double>(begin: 0.95, end: 1.15).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    
+
     // If music is selected from library, use it
     if (widget.selectedMusic != null) {
       _currentMusic = widget.selectedMusic;
     }
     _loadMeditationMusic();
   }
-  
+
   Future<void> _togglePreviewPlayback(String musicId, String audioPath) async {
     if (_previewPlayingId == musicId && _isPreviewPlaying) {
       // Stop playing
@@ -191,7 +191,7 @@ class _MeditationPageState extends State<MeditationPage>
         elevation: 2,
         foregroundColor: Colors.black,
       ),
-      body: _isSessionActive 
+      body: _isSessionActive
           ? _buildSessionUI()
           : _buildSetupUI(),
     );
@@ -205,7 +205,7 @@ class _MeditationPageState extends State<MeditationPage>
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 30),
-            
+
             // Affirmation
             Text(
               _affirmations[DateTime.now().microsecond % _affirmations.length],
@@ -217,22 +217,22 @@ class _MeditationPageState extends State<MeditationPage>
                 fontStyle: FontStyle.italic,
               ),
             ),
-            
+
             const SizedBox(height: 50),
-            
+
             // Time selector card
             _buildTimeSelectorCard(),
-            
+
             const SizedBox(height: 40),
-            
+
             // Music selector card
             _buildMusicSelectorCard(),
-            
+
             const SizedBox(height: 40),
-            
+
             // Start button
             _buildStartButton(),
-            
+
             const SizedBox(height: 24),
           ],
         ),
@@ -245,7 +245,7 @@ class _MeditationPageState extends State<MeditationPage>
       animation: Listenable.merge([_breathingAnimation, _pulseAnimation]),
       builder: (context, child) {
         final scale = 0.6 + (_breathingAnimation.value * 0.4);
-        
+
         return Column(
           children: [
             Stack(
@@ -266,7 +266,7 @@ class _MeditationPageState extends State<MeditationPage>
                     ),
                   ),
                 ),
-                
+
                 // Main breathing circle
                 Transform.scale(
                   scale: scale,
@@ -310,9 +310,9 @@ class _MeditationPageState extends State<MeditationPage>
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Breathing text
             AnimatedOpacity(
               opacity: _breathingAnimation.value < 0.5 ? 1.0 : 0.6,
@@ -335,7 +335,7 @@ class _MeditationPageState extends State<MeditationPage>
 
   Widget _buildTimeSelectorCard() {
     final times = [5, 10, 15, 20, 25, 30];
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -434,7 +434,7 @@ class _MeditationPageState extends State<MeditationPage>
             ),
           ),
           const SizedBox(height: 16),
-          
+
           if (_currentMusic != null)
             Container(
               padding: const EdgeInsets.all(12),
@@ -527,9 +527,9 @@ class _MeditationPageState extends State<MeditationPage>
                 ),
               ),
             ),
-          
+
           const SizedBox(height: 12),
-          
+
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
@@ -540,8 +540,8 @@ class _MeditationPageState extends State<MeditationPage>
                 _showMusicSelector ? Icons.expand_less : Icons.expand_more,
               ),
               label: Text(
-                _showMusicSelector 
-                    ? 'Hide Library' 
+                _showMusicSelector
+                    ? 'Hide Library'
                     : 'Choose from Library',
               ),
               style: OutlinedButton.styleFrom(
@@ -551,7 +551,7 @@ class _MeditationPageState extends State<MeditationPage>
               ),
             ),
           ),
-          
+
           if (_showMusicSelector) ...[
             const SizedBox(height: 12),
             _isMusicLoading
@@ -572,7 +572,7 @@ class _MeditationPageState extends State<MeditationPage>
                       itemBuilder: (context, index) {
                         final music = _meditationMusicList[index];
                         final isSelected = _currentMusic?['id'] == music['id'];
-                        
+
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 8.0),
                           child: Material(
@@ -727,7 +727,7 @@ class _MeditationPageState extends State<MeditationPage>
   Widget _buildSessionUI() {
     final timeRemaining = _sessionDuration - _elapsedTime;
     final progressValue = _elapsedTime.inSeconds / _sessionDuration.inSeconds;
-    
+
     return Column(
       children: [
         Expanded(
@@ -762,9 +762,9 @@ class _MeditationPageState extends State<MeditationPage>
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   Column(
                     children: [
                       Text(
@@ -788,9 +788,9 @@ class _MeditationPageState extends State<MeditationPage>
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 40),
-                  
+
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                     decoration: BoxDecoration(
@@ -855,9 +855,9 @@ class _MeditationPageState extends State<MeditationPage>
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 40),
-                  
+
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -909,9 +909,9 @@ class _MeditationPageState extends State<MeditationPage>
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 40),
-                  
+
                   if (_currentMusic != null && _isPlayingMusic)
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -988,7 +988,7 @@ class _MeditationPageState extends State<MeditationPage>
             ),
           ),
         ),
-        
+
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
@@ -1072,19 +1072,19 @@ class _MeditationPageState extends State<MeditationPage>
 
   Future<void> _loadMeditationMusic() async {
     setState(() => _isMusicLoading = true);
-    
+
     List<Map<String, dynamic>> allTracks = [];
-    
+
     try {
       final url = Uri.parse(
         'https://freesound.org/apiv2/search/text/?query=meditation zen mindfulness&fields=id,name,previews,duration&token=${ApiKeys.freesoundApiKey}&page_size=15'
       );
-      
+
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List results = data['results'] ?? [];
-        
+
         allTracks.addAll(results.asMap().entries.map((entry) {
           final index = entry.key;
           final item = entry.value;
@@ -1100,7 +1100,7 @@ class _MeditationPageState extends State<MeditationPage>
     } catch (e) {
       allTracks = _getExampleMeditationTracks();
     }
-    
+
     setState(() {
       _meditationMusicList = allTracks.isNotEmpty ? allTracks : _getExampleMeditationTracks();
       _isMusicLoading = false;
@@ -1171,7 +1171,7 @@ class _MeditationPageState extends State<MeditationPage>
       if (!_isPaused) {
         setState(() {
           _elapsedTime = Duration(seconds: _elapsedTime.inSeconds + 1);
-          
+
           if (_elapsedTime >= _sessionDuration) {
             _endSession();
             timer.cancel();
@@ -1195,9 +1195,9 @@ class _MeditationPageState extends State<MeditationPage>
   Future<void> _endSession() async {
     await _audioPlayer.stop();
     _sessionTimer?.cancel();
-    
+
     final elapsedTimeFormatted = _formatDuration(_elapsedTime);
-    
+
     setState(() {
       _isSessionActive = false;
       _isPaused = false;

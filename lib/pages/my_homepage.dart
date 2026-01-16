@@ -1,39 +1,26 @@
 import 'dart:convert'; // Pour décoder le JSON de l'API
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http; // Pour l'appel API
-
-// BLoCs
-import '../bloc/mood_bloc.dart';
-
-// Widgets
-import '../widgets/streak_card.dart';
-import '../widgets/recommendation_tile.dart';
-
-// Pages & Navigation
+import 'package:starteu/auth/services/auth_service.dart';
+import 'package:starteu/bloc/mood_bloc.dart';
+import 'package:starteu/pages/notifications_page.dart';
+import 'package:starteu/pages/daily_reflection_page.dart';
+import 'package:starteu/widgets/recommendation_tile.dart';
+import 'package:starteu/widgets/streak_card.dart';
+import 'main_navigation_page.dart';
+import 'package:http/http.dart' as http;
 import '../config/api_keys.dart';
-import 'notifications_page.dart'; 
-import 'main_navigation_page.dart'; 
-import 'meditation_page.dart';
-import 'library_page.dart';
-import 'test_page.dart'; 
-import 'daily_reflection_page.dart';
+import 'test_page.dart';
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
-  
-  // --- MAPPING COHÉRENT : MOOD -> CATÉGORIE LIBRARY ---
-  String _getLibraryCategoryForMood(String mood) {
-    switch (mood) {
-      case 'Great': return 'Chill';
-      case 'Good': return 'Focus';
-      case 'Okay': return 'Meditation';
-      case 'Sad': return 'Anxiety';
-      case 'Awful': return 'Sleep';
-      default: return 'All';
-    }
-  }
+class MyHomePage extends StatefulWidget {
+  final AuthService authService;
+  const MyHomePage({super.key, required this.authService});
 
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
   // --- LOGIQUE DE MAPPING MOOD -> REQUÊTE API FREESOUND ---
   String _getQueryForMood(String mood) {
     switch (mood) {
@@ -46,13 +33,25 @@ class MyHomePage extends StatelessWidget {
     }
   }
 
+  // --- MAPPING COHÉRENT : MOOD -> CATÉGORIE LIBRARY ---
+  String _getLibraryCategoryForMood(String mood) {
+    switch (mood) {
+      case 'Great': return 'Chill';
+      case 'Good': return 'Focus';
+      case 'Okay': return 'Meditation';
+      case 'Sad': return 'Anxiety';
+      case 'Awful': return 'Sleep';
+      default: return 'All';
+    }
+  }
+
   // --- APPEL API POUR RÉCUPÉRER UNE PISTE CORRESPONDANTE ---
   Future<Map<String, dynamic>?> _fetchMoodMusic(String mood) async {
     final query = _getQueryForMood(mood);
     final url = Uri.parse(
       'https://freesound.org/apiv2/search/text/?query=$query&fields=name&token=${ApiKeys.freesoundApiKey}&page_size=1'
     );
-    
+
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -71,6 +70,20 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: _buildHeader(context),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            tooltip: 'Logout',
+            onPressed: () {
+              widget.authService.signOut();
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
         child: BlocBuilder<MoodBloc, MoodState>(
           builder: (context, state) {
@@ -84,9 +97,6 @@ class MyHomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 10),
-                  _buildHeader(context),
-                  const SizedBox(height: 30),
-
                   const Text(
                     "How are you feeling today?",
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -105,7 +115,6 @@ class MyHomePage extends StatelessWidget {
                   _buildSectionHeader("Today's Recommendations"),
                   const SizedBox(height: 15),
 
-                  // --- RECOMMANDATION DYNAMIQUE BASÉE SUR L'HUMEUR ---
                   if (state.todayMood != null)
                     FutureBuilder<Map<String, dynamic>?>(
                       future: _fetchMoodMusic(state.todayMood!),
@@ -121,11 +130,11 @@ class MyHomePage extends StatelessWidget {
                             icon: Icons.auto_awesome,
                             title: "Perfect for your ${state.todayMood} mood",
                             subtitle: snapshot.data!['name'] ?? "Tap to listen",
-                            backgroundColor: const Color(0xFFF3E5F5), 
+                            backgroundColor: const Color(0xFFF3E5F5),
                             onTap: () {
                               final category = _getLibraryCategoryForMood(state.todayMood!);
                               MainNavigationPage.of(context)?.changeTab(
-                                1, 
+                                1,
                                 libraryCategory: category,
                               );
                             },
@@ -141,9 +150,10 @@ class MyHomePage extends StatelessWidget {
                     title: "5-Min Morning Zen",
                     subtitle: "A quick session to start your day focused.",
                     backgroundColor: const Color(0xFFE3F2FD),
-                    onTap: () => MainNavigationPage.of(context)?.changeTab(2),
+                    onTap: () {
+                      MainNavigationPage.of(context)?.changeTab(2);
+                    }
                   ),
-
                   RecommendationTile(
                     icon: Icons.headphones,
                     title: "Calming Music",
@@ -153,7 +163,6 @@ class MyHomePage extends StatelessWidget {
                       MainNavigationPage.of(context)?.changeTab(1);
                     },
                   ),
-
                   RecommendationTile(
                     icon: Icons.edit_note,
                     title: "Daily Reflection",
@@ -178,26 +187,43 @@ class MyHomePage extends StatelessWidget {
     );
   }
 
-  // --- WIDGETS DE CONSTRUCTION ---
-
   Widget _buildHeader(BuildContext context) {
+    final user = widget.authService.currentUser;
+    final displayName = user?.displayName ?? 'User';
+
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Good Morning,", style: TextStyle(color: Colors.grey, fontSize: 14)),
-            Text("User", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            const Text(
+              "Good Morning,",
+              style: TextStyle(color: Colors.grey, fontSize: 14),
+            ),
+            Text(
+              displayName,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
           ],
         ),
+
+        const Spacer(),
+
         Row(
           children: [
             Container(
-              margin: const EdgeInsets.only(right: 10),
-              decoration: BoxDecoration(color: Colors.deepPurple[50], shape: BoxShape.circle),
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: Colors.deepPurple[50],
+                shape: BoxShape.circle,
+              ),
               child: IconButton(
                 icon: const Icon(Icons.bar_chart_rounded, color: Colors.deepPurple),
+                tooltip: "Test Page",
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -207,13 +233,19 @@ class MyHomePage extends StatelessWidget {
               ),
             ),
             Container(
-              decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                shape: BoxShape.circle,
+              ),
               child: IconButton(
                 icon: const Icon(Icons.notifications_none, color: Colors.black),
+                tooltip: "Notifications",
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const NotificationsPage()),
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationsPage(),
+                    ),
                   );
                 },
               ),

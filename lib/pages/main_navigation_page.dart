@@ -1,42 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:starteu/auth/services/auth_service.dart';
 import 'my_homepage.dart';
 import 'library_page.dart';
 import 'meditation_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
-const MainNavigationPage({super.key});
+  final AuthService authService;
 
-static _MainNavigationPageState? of(BuildContext context) =>
-    context.findAncestorStateOfType<_MainNavigationPageState>();
+  const MainNavigationPage({super.key, required this.authService});
 
-@override
-State<MainNavigationPage> createState() => _MainNavigationPageState();
+  static _MainNavigationPageState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_MainNavigationPageState>();
+
+  @override
+  State<MainNavigationPage> createState() => _MainNavigationPageState();
 }
 
 class _MainNavigationPageState extends State<MainNavigationPage> {
   int _selectedIndex = 0;
   Map<String, dynamic>? _selectedMusicForMeditation;
-  String? _libraryCategory; // Stocke la catégorie cible
+  String? _libraryCategory;
 
-  // Mise à jour de la fonction pour accepter la catégorie
   void changeTab(int index, {String? libraryCategory}) {
     setState(() {
       _selectedIndex = index;
-      _libraryCategory = libraryCategory;
+      if (libraryCategory != null) {
+        _libraryCategory = libraryCategory;
+      }
     });
   }
 
-void setMeditationMusic(Map<String, dynamic> music) {
-  setState(() {
-    _selectedMusicForMeditation = music;
-    _selectedIndex = 2; // Switch to meditation tab
-  });
-}
+  void setMeditationMusic(Map<String, dynamic> music) {
+    setState(() {
+      _selectedMusicForMeditation = music;
+      _selectedIndex = 2; // Switch to meditation tab
+    });
+  }
 
   Widget _getPage(int index) {
     switch (index) {
       case 0:
-        return const MyHomePage();
+        return MyHomePage(authService: widget.authService);
       case 1:
         return LibraryPage(title: "Library", initialCategory: _libraryCategory);
       case 2:
@@ -44,9 +48,10 @@ void setMeditationMusic(Map<String, dynamic> music) {
       case 3:
         return const Center(child: Text('Profile'));
       default:
-        return const MyHomePage();
+        return MyHomePage(authService: widget.authService);
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,8 +59,7 @@ void setMeditationMusic(Map<String, dynamic> music) {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
-          // Si on change d'onglet manuellement, on réinitialise le filtre
-          if (index != 1) {
+          if (index != 1 && _selectedIndex == 1) {
             setState(() {
               _libraryCategory = null;
             });
@@ -66,10 +70,22 @@ void setMeditationMusic(Map<String, dynamic> music) {
         selectedItemColor: Colors.deepPurple,
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.library_music_rounded), label: 'Library'),
-          BottomNavigationBarItem(icon: Icon(Icons.self_improvement), label: 'Meditate'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profile'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_rounded),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.library_music_rounded),
+            label: 'Library',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.self_improvement),
+            label: 'Meditate',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_rounded),
+            label: 'Profile',
+          ),
         ],
       ),
     );

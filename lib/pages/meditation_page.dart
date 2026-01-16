@@ -1243,9 +1243,23 @@ class _MeditationPageState extends State<MeditationPage>
 
   @override
   void dispose() {
-    _breathingController.dispose();
-    _audioPlayer.dispose();
+    // Stop timers first
     _sessionTimer?.cancel();
+    
+    // Stop and dispose animation controllers
+    if (_breathingController.isAnimating) {
+      _breathingController.stop();
+    }
+    _breathingController.dispose();
+    
+    if (_pulseController.isAnimating) {
+      _pulseController.stop();
+    }
+    _pulseController.dispose();
+    
+    // Dispose audio player
+    _audioPlayer.dispose();
+    
     super.dispose();
   }
 }

@@ -13,15 +13,17 @@ import 'pages/main_navigation_page.dart';
 // Import Bloc/Repo for the Mental Health features
 import 'bloc/mood_bloc.dart';
 import 'data/repositories/mood_repository.dart';
-import 'pages/main_navigation_page.dart';
 import 'pages/meditation_page.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Initialize the specific service you want to use
   final authService = FirebaseAuthService();
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+  await notificationService.scheduleDailyMeditationReminder();
 
   runApp(MyApp(authService: authService));
 }
